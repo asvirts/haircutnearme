@@ -16,46 +16,48 @@ interface SalonCardProps {
 }
 
 export function SalonCard({ salon }: SalonCardProps) {
-  // Get city and state from complete_address if available
-  const location =
-    salon.complete_address?.city && salon.complete_address?.state
-      ? `${salon.complete_address.city}, ${salon.complete_address.state}`
-      : "Location info unavailable"
+  // Safely handle potentially undefined values
+  const thumbnailSrc = salon?.thumbnail || "/images/placeholder-salon.jpg"
+  const title = salon?.title || "Salon"
+  const address = salon?.address || "Address unavailable"
+  const reviewRating = salon?.review_rating || "N/A"
+  const reviewCount = salon?.review_count || 0
+  const salonId = salon?.id || "unknown"
+  const priceRangeDisplay = salon?.price_range || "$"
+  const phone = salon?.phone || ""
+  const openHours = salon?.open_hours
 
-  // Format price range for display
-  const priceRangeDisplay = salon.price_range || "$"
+  // Early return if salon is undefined
+  if (!salon) {
+    return null
+  }
 
   return (
-    <Card
-      className="overflow-hidden transition-all hover:shadow-md"
-      itemScope
-      itemType="https://schema.org/HairSalon"
-    >
+    <Card className="overflow-hidden transition-all hover:shadow-md">
       <div className="relative h-48 w-full">
         <Image
-          src={salon.thumbnail || "/images/placeholder-salon.jpg"}
-          alt={`${salon.title} - hair salon - haircut near me`}
+          src={thumbnailSrc}
+          alt={`${title} - hair salon`}
           fill
           className="object-cover"
-          loading="lazy"
-          itemProp="image"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={false}
         />
       </div>
       <CardHeader>
         <CardTitle>
           <Link
-            href={`/salons/${salon.id}`}
+            href={`/salons/${salonId}`}
             className="hover:underline"
-            itemProp="name"
           >
-            {salon.title}
+            {title}
           </Link>
         </CardTitle>
         <CardDescription>
-          <div className="flex items-center gap-1 text-sm">
+          <span className="flex items-center gap-1 text-sm">
             <MapPin className="h-4 w-4" />
-            <span itemProp="address">{salon.address}</span>
-          </div>
+            <span>{address}</span>
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -63,27 +65,26 @@ export function SalonCard({ salon }: SalonCardProps) {
           <div className="flex items-center gap-2">
             <Star className="h-4 w-4 text-yellow-500" />
             <span>
-              <span itemProp="aggregateRating">{salon.review_rating}</span> (
-              {salon.review_count} reviews)
+              {reviewRating} ({reviewCount} reviews)
             </span>
           </div>
-          {salon.phone && (
+          {phone && (
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              <a href={`tel:${salon.phone}`} itemProp="telephone">
-                {salon.phone}
+              <a href={`tel:${phone}`}>
+                {phone}
               </a>
             </div>
           )}
-          {salon.open_hours && (
+          {openHours && (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>
-                {Array.isArray(salon.open_hours)
+                {Array.isArray(openHours)
                   ? "Hours available"
-                  : typeof salon.open_hours === "object" &&
-                    salon.open_hours.today
-                  ? salon.open_hours.today
+                  : typeof openHours === "object" &&
+                    openHours.today
+                  ? openHours.today
                   : "Hours available"}
               </span>
             </div>
@@ -96,7 +97,7 @@ export function SalonCard({ salon }: SalonCardProps) {
           <span>{priceRangeDisplay}</span>
         </div>
         <Link
-          href={`/salons/${salon.id}`}
+          href={`/salons/${salonId}`}
           className="text-sm font-medium text-blue-600 hover:underline"
         >
           View Details
