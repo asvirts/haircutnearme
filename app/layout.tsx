@@ -34,6 +34,7 @@ export default function RootLayout({
         />
         <link rel="canonical" href="https://haircutnearme.net" />
         <GoogleAdsenseScript />
+        {/* Remove or replace the example script that's causing errors */}
       </head>
       <body className="antialiased min-h-screen flex flex-col">
         <Header />
