@@ -9,77 +9,98 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card"
-import { MapPin, Phone, DollarSign, Wheelchair, Car } from "lucide-react"
+import { MapPin, Phone, DollarSign, Clock, Star } from "lucide-react"
 
 interface SalonCardProps {
   salon: Salon
 }
 
 export function SalonCard({ salon }: SalonCardProps) {
+  // Get city and state from complete_address if available
+  const location =
+    salon.complete_address?.city && salon.complete_address?.state
+      ? `${salon.complete_address.city}, ${salon.complete_address.state}`
+      : "Location info unavailable"
+
+  // Format price range for display
+  const priceRangeDisplay = salon.price_range || "$"
+
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card
+      className="overflow-hidden transition-all hover:shadow-md"
+      itemScope
+      itemType="https://schema.org/HairSalon"
+    >
       <div className="relative h-48 w-full">
         <Image
-          src={salon.image_url || "/images/placeholder-salon.jpg"}
-          alt={salon.name}
+          src={salon.thumbnail || "/images/placeholder-salon.jpg"}
+          alt={`${salon.title} - hair salon - haircut near me`}
           fill
           className="object-cover"
+          loading="lazy"
+          itemProp="image"
         />
       </div>
       <CardHeader>
         <CardTitle>
-          <Link href={`/salons/${salon.id}`} className="hover:underline">
-            {salon.name}
+          <Link
+            href={`/salons/${salon.id}`}
+            className="hover:underline"
+            itemProp="name"
+          >
+            {salon.title}
           </Link>
         </CardTitle>
-        <CardDescription className="flex items-center gap-1">
-          <MapPin className="h-4 w-4" />
-          {salon.city}, {salon.state}
+        <CardDescription>
+          <div className="flex items-center gap-1 text-sm">
+            <MapPin className="h-4 w-4" />
+            <span itemProp="address">{salon.address}</span>
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <p className="line-clamp-2 text-sm text-gray-600">
-            {salon.description}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Phone className="h-4 w-4" />
-          {salon.phone}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {salon.amenities.slice(0, 3).map((amenity) => (
-            <span
-              key={amenity}
-              className="rounded-full bg-gray-100 px-2 py-1 text-xs"
-            >
-              {amenity}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-500" />
+            <span>
+              <span itemProp="aggregateRating">{salon.review_rating}</span> (
+              {salon.review_count} reviews)
             </span>
-          ))}
-          {salon.amenities.length > 3 && (
-            <span className="rounded-full bg-gray-100 px-2 py-1 text-xs">
-              +{salon.amenities.length - 3} more
-            </span>
+          </div>
+          {salon.phone && (
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              <a href={`tel:${salon.phone}`} itemProp="telephone">
+                {salon.phone}
+              </a>
+            </div>
+          )}
+          {salon.open_hours && (
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>
+                {Array.isArray(salon.open_hours)
+                  ? "Hours available"
+                  : typeof salon.open_hours === "object" &&
+                    salon.open_hours.today
+                  ? salon.open_hours.today
+                  : "Hours available"}
+              </span>
+            </div>
           )}
         </div>
       </CardContent>
-      <CardFooter className="justify-between border-t p-4">
+      <CardFooter className="flex justify-between">
         <div className="flex items-center gap-1">
-          {Array.from({ length: salon.price_range }).map((_, i) => (
-            <DollarSign key={i} className="h-4 w-4 text-green-600" />
-          ))}
+          <DollarSign className="h-4 w-4" />
+          <span>{priceRangeDisplay}</span>
         </div>
-        <div className="flex gap-2">
-          {salon.is_wheelchair_accessible && (
-            <Wheelchair
-              className="h-4 w-4 text-blue-500"
-              title="Wheelchair Accessible"
-            />
-          )}
-          {salon.has_parking && (
-            <Car className="h-4 w-4 text-blue-500" title="Parking Available" />
-          )}
-        </div>
+        <Link
+          href={`/salons/${salon.id}`}
+          className="text-sm font-medium text-blue-600 hover:underline"
+        >
+          View Details
+        </Link>
       </CardFooter>
     </Card>
   )

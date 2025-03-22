@@ -1,6 +1,7 @@
+"use client"
+
 import { SearchFilters } from "@/components/SearchFilters"
 import { SalonCard } from "@/components/SalonCard"
-import { getSalons } from "@/lib/api"
 import { Salon } from "@/lib/types"
 
 // This would be a server component in a real app
@@ -122,7 +123,7 @@ const MOCK_SALONS: Salon[] = [
 ]
 
 export default function SalonsPage() {
-  const handleFilterChange = (filters: any) => {
+  const handleFilterChange = (filters: Record<string, unknown>) => {
     console.log("Filters changed:", filters)
     // In a real app, this would filter the salons
   }

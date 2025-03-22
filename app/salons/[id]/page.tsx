@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import { Metadata } from "next"
 import { getSalonById } from "@/lib/api"
 import { StylistCard } from "@/components/StylistCard"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,7 @@ import {
   Globe,
   Clock,
   DollarSign,
-  Wheelchair,
+  Accessibility,
   Car
 } from "lucide-react"
 import { Salon, Stylist } from "@/lib/types"
@@ -123,6 +124,37 @@ const STYLISTS: Stylist[] = [
   }
 ]
 
+// Define dynamic metadata for this page based on salon data
+export async function generateMetadata({
+  params
+}: {
+  params: { id: string }
+}): Promise<Metadata> {
+  // In a real app, fetch the salon data using the id
+  // const salon = await getSalonById(params.id);
+  const salon = SALON
+
+  // Use the salon name in the title for SEO
+  const title = `${salon.name} - Haircuts Near Me in ${salon.city}, ${salon.state}`
+  const description = `Book haircuts, color, and styling at ${salon.name} in ${
+    salon.city
+  }. ${salon.description.substring(0, 150)}...`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: salon.image_url ? [salon.image_url] : []
+    },
+    alternates: {
+      canonical: `https://haircutnearme.net/salons/${params.id}`
+    }
+  }
+}
+
 // In a real app, this would be a server component that fetches data based on the ID parameter
 export default function SalonPage({ params }: { params: { id: string } }) {
   // In a real app: const salon = await getSalonById(params.id);
@@ -142,9 +174,10 @@ export default function SalonPage({ params }: { params: { id: string } }) {
           <div className="relative h-80 w-full overflow-hidden rounded-lg">
             <Image
               src={salon.image_url || "/images/placeholder-salon.jpg"}
-              alt={salon.name}
+              alt={`${salon.name} hair salon in ${salon.city}, ${salon.state}`}
               fill
               className="object-cover"
+              priority
             />
           </div>
 
@@ -154,7 +187,7 @@ export default function SalonPage({ params }: { params: { id: string } }) {
               <div key={i} className="relative h-20 overflow-hidden rounded-lg">
                 <Image
                   src={`/images/salon-detail-${i}.jpg`}
-                  alt={`${salon.name} interior ${i}`}
+                  alt={`${salon.name} hair salon interior view ${i}`}
                   fill
                   className="object-cover"
                 />
@@ -205,7 +238,7 @@ export default function SalonPage({ params }: { params: { id: string } }) {
           <div className="mb-6 flex flex-wrap gap-2">
             {salon.is_wheelchair_accessible && (
               <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                <Wheelchair className="h-4 w-4" />
+                <Accessibility className="h-4 w-4" />
                 Wheelchair Accessible
               </span>
             )}
@@ -270,6 +303,58 @@ export default function SalonPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+
+      {/* Schema.org structured data for local business */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HairSalon",
+            name: salon.name,
+            image: salon.image_url,
+            "@id": `https://haircutnearme.net/salons/${salon.id}`,
+            url: `https://haircutnearme.net/salons/${salon.id}`,
+            telephone: salon.phone,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: salon.address,
+              addressLocality: salon.city,
+              addressRegion: salon.state,
+              postalCode: salon.zip,
+              addressCountry: "US"
+            },
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: salon.latitude,
+              longitude: salon.longitude
+            },
+            openingHoursSpecification: [
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday"
+                ],
+                opens: "09:00",
+                closes: "19:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: "Saturday",
+                opens: "09:00",
+                closes: "17:00"
+              }
+            ],
+            priceRange: "$".repeat(salon.price_range),
+            hasMap: `https://maps.google.com/?q=${salon.latitude},${salon.longitude}`,
+            keywords: "haircut, salon, hair styling, barber, haircuts near me"
+          })
+        }}
+      />
     </div>
   )
 }

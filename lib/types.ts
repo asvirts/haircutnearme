@@ -1,23 +1,37 @@
 export type Salon = {
-  id: string
-  name: string
+  id: number
+  input_id: string
+  link: string
+  title: string // salon name
+  category: string
   address: string
-  city: string
-  state: string
-  zip: string
-  phone: string
-  email: string
+  open_hours: Record<string, any>
+  popular_times: Record<string, any>
   website?: string
-  description: string
-  amenities: string[]
-  created_at: string
-  updated_at: string
+  phone: string
+  plus_code: string
+  review_count: number
+  review_rating: number
+  reviews_per_rating: Record<string, any>
   latitude?: number
   longitude?: number
-  image_url?: string
-  is_wheelchair_accessible: boolean
-  has_parking: boolean
-  price_range: 1 | 2 | 3 | 4 // $ to $$$$
+  cid: number
+  status: string
+  descriptions: string
+  reviews_link: string
+  thumbnail: string
+  timezone: string
+  price_range: string
+  data_id: string
+  images: string[]
+  reservations: string
+  order_online: string
+  menu: Record<string, any>
+  owner: Record<string, any>
+  complete_address: Record<string, any>
+  about: Record<string, any>
+  user_reviews: Record<string, any>
+  emails: string
 }
 
 export type Stylist = {

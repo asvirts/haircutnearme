@@ -1,6 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HaircutNearMe
 
-## Getting Started
+A modern web application to help users find and book appointments with hair salons and stylists in their area.
+
+## 🚀 Project Overview
+
+HaircutNearMe is a Next.js application that connects users with local hair salons and stylists. The platform allows users to search for salons based on location, price range, and services offered, and book appointments with their preferred stylists.
+
+## 📋 Changelog
+
+### Data Schema Update (March 22, 2024)
+
+- Updated Salon data type to match Supabase database schema
+- Refactored SalonCard component to work with the new schema
+- Updated mock data in homepage to use the new schema format
+
+### Initial Setup (March 22, 2024)
+
+- Created Next.js 15 project with TypeScript, React 19, and TailwindCSS 4
+- Set up Supabase integration for backend database and authentication
+- Implemented responsive UI components with Tailwind and custom UI components
+- Created core data types for Salons, Stylists, Services, Reviews, and Appointments
+- Built homepage with search functionality, featured salons, and information sections
+- Added SEO optimization with metadata, JSON-LD, and sitemap
+- Implemented page routing for various sections of the application
+- Added Google AdSense integration
+- Created reusable UI components (SalonCard, StylistCard, SearchFilters, etc.)
+
+## 🏗️ Project Structure
+
+```
+haircutnearme/
+├── app/                # Next.js app router pages
+│   ├── about/          # About us page
+│   ├── book/           # Appointment booking flow
+│   ├── contact/        # Contact page
+│   ├── faq/            # FAQ page
+│   ├── list-business/  # Business listing page
+│   ├── login/          # Authentication page
+│   ├── privacy/        # Privacy policy
+│   ├── salons/         # Salon listings and details
+│   ├── stylists/       # Stylist listings and details
+│   ├── terms/          # Terms of service
+│   ├── page.tsx        # Homepage
+│   ├── layout.tsx      # Root layout
+│   └── ...             # Other app files
+├── components/         # Reusable UI components
+│   ├── ui/             # Base UI components
+│   ├── Footer.tsx      # Site footer
+│   ├── GoogleAdsense.tsx # Ad integration
+│   ├── Header.tsx      # Site header/navigation
+│   ├── SalonCard.tsx   # Salon display card
+│   ├── SearchFilters.tsx # Search and filtering component
+│   ├── StylistCard.tsx # Stylist display card
+│   └── ...
+├── lib/                # Utilities and services
+│   ├── api.ts          # API integration functions
+│   ├── supabase.ts     # Supabase client configuration
+│   ├── types.ts        # TypeScript type definitions
+│   └── utils.ts        # Helper functions
+└── public/             # Static assets
+```
+
+## 🔧 Key Technologies
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: TailwindCSS 4, CVA (class-variance-authority)
+- **Database**: Supabase
+- **Authentication**: Supabase Auth
+- **Icons**: Lucide React, Heroicons, React Icons
+- **Deployment**: Vercel (planned)
+
+## 🌟 Key Features
+
+- **Salon Search**: Find hair salons by location, price range, and services
+- **Stylist Profiles**: View stylist information, specialties, and availability
+- **Online Booking**: Book appointments with preferred stylists
+- **Reviews**: Read and write reviews for salons and stylists
+- **Business Listings**: Allow salon owners to register their businesses
+- **Responsive Design**: Mobile-friendly interface for all device sizes
+
+## 📦 Data Models
+
+### Salon
+
+- **Basic Information**: ID, title (name), category, address, descriptions
+- **Contact Details**: Phone, website, emails, plus_code
+- **Business Hours**: Open hours (including today's hours and weekly schedule)
+- **Reviews**: Review count, rating, reviews by rating, user reviews, review link
+- **Location**: Latitude, longitude, complete address (street, city, state, zip)
+- **Media**: Thumbnail, images collection
+- **Business Details**: Price range, status, reservations link, order online link
+- **Owner Information**: Name, response rate
+- **Metadata**: About section with highlights and services, popular times, menu
+
+### Stylist
+
+- Professional information and bio
+- Specialties and services offered
+- Experience and ratings
+- Portfolio images
+
+### Service
+
+- Service details (name, description)
+- Duration and pricing
+- Associated stylist
+
+### Review
+
+- Overall and specific ratings
+- Customer comments
+- Date of experience
+
+### Appointment
+
+- Date, time, and duration
+- Selected service and stylist
+- Customer information
+- Status tracking
+
+## 🚀 Getting Started
 
 First, run the development server:
 
@@ -16,21 +135,42 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Environment Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file with the following variables:
 
-## Learn More
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🧪 Mock Data
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+During development, the application uses mock data for salons and stylists. In production, this will be replaced with data from Supabase.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📱 Responsive Design
 
-## Deploy on Vercel
+The application is fully responsive and optimized for:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Mobile devices
+- Tablets
+- Desktop computers
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔍 SEO Optimization
+
+- Semantic HTML throughout
+- JSON-LD structured data
+- Dynamic metadata for each page
+- Sitemap and robots.txt
+
+## 🔮 Future Enhancements
+
+- User accounts with favorite salons and stylists
+- Email notifications for appointments
+- Calendar integration
+- Payment processing
+- Mobile app version
+
+## 📝 License
+
+[MIT](https://choosealicense.com/licenses/mit/)

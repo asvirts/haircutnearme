@@ -1,3 +1,5 @@
+"use client"
+
 import { SearchFilters } from "@/components/SearchFilters"
 import { StylistCard } from "@/components/StylistCard"
 import { Stylist } from "@/lib/types"
@@ -156,7 +158,7 @@ const MOCK_STYLISTS: Stylist[] = [
 ]
 
 export default function StylistsPage() {
-  const handleFilterChange = (filters: any) => {
+  const handleFilterChange = (filters: Record<string, unknown>) => {
     console.log("Filters changed:", filters)
     // In a real app, this would filter the stylists
   }

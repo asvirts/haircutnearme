@@ -1,25 +1,23 @@
-import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import Script from "next/script"
+import { Header } from "@/components/Header"
+import { Footer } from "@/components/Footer"
+import { GoogleAdsenseScript } from "@/components/GoogleAdsenseScript"
+import { metadata as siteMetadata } from "./metadata"
+
+export { siteMetadata as metadata }
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"]
+  subsets: ["latin"],
+  display: "swap"
 })
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"]
+  subsets: ["latin"],
+  display: "swap"
 })
-
-export const metadata: Metadata = {
-  title: "HaircutNearMe.net | Find Local Salons & Stylists",
-  description:
-    "Find and book appointments with the best hair salons and stylists near you."
-}
 
 export default function RootLayout({
   children
@@ -27,18 +25,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
-          strategy="afterInteractive"
-          onError={(e) => console.error("Script failed to load", e)}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+          name="google-site-verification"
+          content="your-verification-code"
         />
+        <link rel="canonical" href="https://haircutnearme.net" />
+        <GoogleAdsenseScript />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-      >
+      <body className="antialiased min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
