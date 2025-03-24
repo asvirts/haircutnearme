@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -23,12 +23,19 @@ const AVAILABLE_TIMES = [
   "10:30 AM",
   "11:00 AM",
   "11:30 AM",
+  "12:00 PM",
+  "12:30 PM",
   "1:00 PM",
   "1:30 PM",
   "2:00 PM",
   "2:30 PM",
   "3:00 PM",
-  "3:30 PM"
+  "3:30 PM",
+  "4:00 PM",
+  "4:30 PM",
+  "5:00 PM",
+  "5:30 PM",
+  "6:00 PM"
 ]
 
 type BookingStep =
@@ -38,7 +45,8 @@ type BookingStep =
   | "details"
   | "confirmation"
 
-export default function BookPage() {
+// BookingForm component that uses useSearchParams
+function BookingForm() {
   const searchParams = useSearchParams()
   const initialStylistId = searchParams.get("stylist")
   const initialSalonId = searchParams.get("salon")
@@ -156,14 +164,15 @@ export default function BookPage() {
     setBookingDetails((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     if (
       !selectedStylistId ||
       !selectedServiceId ||
       !selectedDate ||
-      !selectedTime
+      !selectedTime ||
+      !selectedService
     ) {
       alert("Please complete all booking steps")
       return
@@ -176,6 +185,7 @@ export default function BookPage() {
         service_id: selectedServiceId,
         date: selectedDate,
         time: selectedTime,
+        duration: selectedService.duration,
         customer_name: `${bookingDetails.firstName} ${bookingDetails.lastName}`,
         customer_email: bookingDetails.email,
         customer_phone: bookingDetails.phone,
@@ -276,13 +286,12 @@ export default function BookPage() {
                       className="object-cover"
                     />
                   </div>
-                  <div>
-                    <h3 className="font-medium">{stylist.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {stylist.specialties.slice(0, 3).join(", ")}
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-900">
+                      {stylist.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {salons[stylist.salon_id].name}
+                      {salons[stylist.salon_id].title}
                     </p>
                   </div>
                 </div>
@@ -330,7 +339,7 @@ export default function BookPage() {
               </div>
               <div>
                 <h3 className="font-medium">{selectedStylist.name}</h3>
-                <p className="text-sm text-gray-600">{salon?.name}</p>
+                <p className="text-sm text-gray-600">{salon?.title}</p>
               </div>
             </div>
           </div>
@@ -401,7 +410,7 @@ export default function BookPage() {
                 </div>
                 <div>
                   <h3 className="font-medium">{selectedStylist.name}</h3>
-                  <p className="text-sm text-gray-600">{salon?.name}</p>
+                  <p className="text-sm text-gray-600">{salon?.title}</p>
                 </div>
               </div>
 
@@ -512,7 +521,7 @@ export default function BookPage() {
                   </div>
                   <div>
                     <h3 className="font-medium">{selectedStylist.name}</h3>
-                    <p className="text-sm text-gray-600">{salon?.name}</p>
+                    <p className="text-sm text-gray-600">{salon?.title}</p>
                   </div>
                 </div>
 
@@ -625,10 +634,8 @@ export default function BookPage() {
           <div className="mx-auto mb-8 max-w-md rounded-lg border bg-gray-50 p-6">
             <div className="mb-4 text-left">
               <h3 className="font-medium">{selectedStylist?.name}</h3>
-              <p className="text-gray-600">{salon?.name}</p>
-              <p className="text-gray-600">
-                {salon?.address}, {salon?.city}
-              </p>
+              <p className="text-gray-600">{salon?.title}</p>
+              <p className="text-gray-600">{salon?.address}</p>
             </div>
 
             <div className="mb-4 border-t border-b py-4">
@@ -681,5 +688,14 @@ export default function BookPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// Main page component with Suspense
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading booking form...</div>}>
+      <BookingForm />
+    </Suspense>
   )
 }

@@ -16,7 +16,11 @@ function calculateAverageRating(reviews: Review[]) {
   return total / reviews.length
 }
 
-export default function StylistPage({ params }: { params: { id: string } }) {
+export default function StylistPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
   const [stylist, setStylist] = useState<Stylist | null>(null)
   const [salon, setSalon] = useState<Salon | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
@@ -26,8 +30,12 @@ export default function StylistPage({ params }: { params: { id: string } }) {
     async function fetchStylistData() {
       setIsLoading(true)
       try {
+        // In useEffect we need to handle the Promise differently since we're in a client component
+        const paramsResolved = await Promise.resolve(params)
+        const id = paramsResolved.id
+
         // Fetch stylist data
-        const stylistData = await getStylistById(params.id)
+        const stylistData = await getStylistById(id)
         setStylist(stylistData)
 
         // Fetch salon data for this stylist
@@ -37,7 +45,7 @@ export default function StylistPage({ params }: { params: { id: string } }) {
         }
 
         // Fetch reviews for this stylist
-        const reviewsData = await getReviewsByStylistId(params.id)
+        const reviewsData = await getReviewsByStylistId(id)
         setReviews(reviewsData)
       } catch (error) {
         console.error("Error fetching stylist data:", error)
@@ -47,7 +55,7 @@ export default function StylistPage({ params }: { params: { id: string } }) {
     }
 
     fetchStylistData()
-  }, [params.id])
+  }, [params])
 
   if (isLoading) {
     return (
@@ -124,10 +132,10 @@ export default function StylistPage({ params }: { params: { id: string } }) {
                 <p className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-400" />
                   <Link
-                    href={`/salons/${salon.id}`}
+                    href={`/salons/${stylist.salon_id}`}
                     className="hover:text-blue-500 hover:underline"
                   >
-                    {salon.name}
+                    {salon.title}
                   </Link>
                 </p>
               </div>

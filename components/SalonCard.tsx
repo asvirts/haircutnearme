@@ -75,10 +75,9 @@ export function SalonCard({ salon }: SalonCardProps) {
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>
-                {Array.isArray(openHours)
-                  ? "Hours available"
-                  : typeof openHours === "object" && openHours.today
-                  ? openHours.today
+                {typeof openHours === "object" &&
+                (openHours as Record<string, unknown>).today
+                  ? String((openHours as Record<string, unknown>).today)
                   : "Hours available"}
               </span>
             </div>

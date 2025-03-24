@@ -17,7 +17,11 @@ import {
 import { Salon, Stylist } from "@/lib/types"
 import { useEffect, useState } from "react"
 
-export default function SalonPage({ params }: { params: { id: string } }) {
+export default function SalonPage({
+  params
+}: {
+  params: Promise<{ id: string }>
+}) {
   const [salon, setSalon] = useState<Salon | null>(null)
   const [stylists, setStylists] = useState<Stylist[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -26,11 +30,15 @@ export default function SalonPage({ params }: { params: { id: string } }) {
     async function fetchSalonData() {
       setIsLoading(true)
       try {
-        const salonData = await getSalonById(params.id)
+        // In useEffect we need to handle the Promise differently since we're in a client component
+        const paramsResolved = await Promise.resolve(params)
+        const id = paramsResolved.id
+
+        const salonData = await getSalonById(id)
         setSalon(salonData)
 
         // Fetch stylists for this salon
-        const stylistsData = await getStylists({ salonId: params.id })
+        const stylistsData = await getStylists({ salonId: id })
         setStylists(stylistsData)
       } catch (error) {
         console.error("Error fetching salon data:", error)
@@ -40,7 +48,7 @@ export default function SalonPage({ params }: { params: { id: string } }) {
     }
 
     fetchSalonData()
-  }, [params.id])
+  }, [params])
 
   if (isLoading) {
     return (
@@ -78,8 +86,8 @@ export default function SalonPage({ params }: { params: { id: string } }) {
         <div className="md:col-span-2">
           <div className="relative h-80 w-full overflow-hidden rounded-lg">
             <Image
-              src={salon.image_url || "/images/placeholder-salon.jpg"}
-              alt={`${salon.name} hair salon in ${salon.city}, ${salon.state}`}
+              src={salon.thumbnail || "/images/placeholder-salon.jpg"}
+              alt={`${salon.title} hair salon`}
               fill
               className="object-cover"
               priority
@@ -92,7 +100,7 @@ export default function SalonPage({ params }: { params: { id: string } }) {
               <div key={i} className="relative h-20 overflow-hidden rounded-lg">
                 <Image
                   src={`/images/salon-detail-${i}.jpg`}
-                  alt={`${salon.name} hair salon interior view ${i}`}
+                  alt={`${salon.title} hair salon interior view ${i}`}
                   fill
                   className="object-cover"
                 />
@@ -103,10 +111,14 @@ export default function SalonPage({ params }: { params: { id: string } }) {
 
         {/* Right column - Salon info */}
         <div>
-          <h1 className="mb-2 text-3xl font-bold">{salon.name}</h1>
+          <h1 className="mb-2 text-3xl font-bold">{salon.title}</h1>
 
           <div className="mb-4 flex items-center gap-1">
-            {Array.from({ length: salon.price_range }).map((_, i) => (
+            {Array.from({
+              length: salon.price_range.includes("$")
+                ? salon.price_range.length
+                : 1
+            }).map((_, i) => (
               <DollarSign key={i} className="h-4 w-4 text-green-600" />
             ))}
             <span className="ml-2 text-sm text-gray-500">Price Range</span>
@@ -115,7 +127,7 @@ export default function SalonPage({ params }: { params: { id: string } }) {
           <div className="mb-6 space-y-3 text-gray-600">
             <p className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-gray-400" />
-              {salon.address}, {salon.city}, {salon.state} {salon.zip}
+              {salon.address}
             </p>
             <p className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-gray-400" />
@@ -141,18 +153,7 @@ export default function SalonPage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="mb-6 flex flex-wrap gap-2">
-            {salon.is_wheelchair_accessible && (
-              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                <Accessibility className="h-4 w-4" />
-                Wheelchair Accessible
-              </span>
-            )}
-            {salon.has_parking && (
-              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                <Car className="h-4 w-4" />
-                Parking Available
-              </span>
-            )}
+            {/* Accessibility features would be added here if available in the API */}
           </div>
 
           <Button className="w-full">Book Appointment</Button>
@@ -161,25 +162,12 @@ export default function SalonPage({ params }: { params: { id: string } }) {
 
       {/* Salon description */}
       <div className="my-10">
-        <h2 className="mb-4 text-2xl font-bold">About {salon.name}</h2>
-        <p className="text-gray-700">{salon.description}</p>
+        <h2 className="mb-4 text-2xl font-bold">About {salon.title}</h2>
+        <p className="text-gray-700">{salon.descriptions}</p>
       </div>
 
       {/* Amenities */}
-      <div className="my-10">
-        <h2 className="mb-4 text-2xl font-bold">Amenities</h2>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-          {salon.amenities &&
-            salon.amenities.map((amenity) => (
-              <div
-                key={amenity}
-                className="rounded-lg bg-gray-100 p-3 text-center"
-              >
-                {amenity}
-              </div>
-            ))}
-        </div>
-      </div>
+      {/* Amenities would be added here if available in the API */}
 
       {/* Stylists */}
       <div className="my-10">

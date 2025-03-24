@@ -1,4 +1,13 @@
+"use client"
+
 import { useEffect } from "react"
+
+// Add adsbygoogle interface to Window
+declare global {
+  interface Window {
+    adsbygoogle: any[]
+  }
+}
 
 interface GoogleAdsenseProps {
   client: string
