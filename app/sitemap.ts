@@ -1,5 +1,4 @@
 import { MetadataRoute } from "next"
-import { Salon } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 
 // Now we fetch all salon IDs from Supabase

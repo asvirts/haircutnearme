@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Stylist, Salon, Service } from "@/lib/types"
+import { Stylist, Salon } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -119,7 +119,7 @@ export default function BookPage() {
     }
 
     fetchData()
-  }, [initialStylistId, initialSalonId])
+  }, [initialStylistId, initialSalonId, salons])
 
   const selectedStylist = selectedStylistId ? stylists[selectedStylistId] : null
   const salonId = selectedStylist?.salon_id || initialSalonId

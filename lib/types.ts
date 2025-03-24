@@ -5,14 +5,14 @@ export type Salon = {
   title: string // salon name
   category: string
   address: string
-  open_hours: Record<string, any>
-  popular_times: Record<string, any>
+  open_hours: Record<string, unknown>
+  popular_times: Record<string, unknown>
   website?: string
   phone: string
   plus_code: string
   review_count: number
   review_rating: number
-  reviews_per_rating: Record<string, any>
+  reviews_per_rating: Record<string, unknown>
   latitude?: number
   longitude?: number
   cid: number
@@ -26,11 +26,11 @@ export type Salon = {
   images: string[]
   reservations: string
   order_online: string
-  menu: Record<string, any>
-  owner: Record<string, any>
-  complete_address: Record<string, any>
-  about: Record<string, any>
-  user_reviews: Record<string, any>
+  menu: Record<string, unknown>
+  owner: Record<string, unknown>
+  complete_address: Record<string, unknown>
+  about: Record<string, unknown>
+  user_reviews: Record<string, unknown>
   emails: string
 }
 

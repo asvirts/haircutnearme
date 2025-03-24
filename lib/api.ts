@@ -1,5 +1,5 @@
 import { supabase } from "./supabase"
-import { Appointment, Review, Salon, Service, Stylist } from "./types"
+import { Appointment, Review, Salon, Stylist } from "./types"
 
 // Salon API functions
 export async function getSalons(
