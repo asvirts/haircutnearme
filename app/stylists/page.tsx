@@ -3,164 +3,42 @@
 import { SearchFilters } from "@/components/SearchFilters"
 import { StylistCard } from "@/components/StylistCard"
 import { Stylist } from "@/lib/types"
-
-// This would be a server component in a real app
-// For demo purposes, using mock data
-const MOCK_STYLISTS: Stylist[] = [
-  {
-    id: "1",
-    salon_id: "1",
-    name: "Jessica Smith",
-    bio: "Award-winning hair stylist with over 10 years of experience specializing in color and balayage.",
-    specialties: ["Color", "Balayage", "Curly Hair"],
-    services: [
-      {
-        id: "101",
-        name: "Haircut",
-        description: "Style cut with consultation",
-        duration: 60,
-        price: 85,
-        stylist_id: "1"
-      },
-      {
-        id: "102",
-        name: "Color",
-        description: "Full color treatment",
-        duration: 120,
-        price: 130,
-        stylist_id: "1"
-      },
-      {
-        id: "103",
-        name: "Balayage",
-        description: "Custom balayage treatment",
-        duration: 180,
-        price: 200,
-        stylist_id: "1"
-      }
-    ],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/stylist1.jpg",
-    years_experience: 10
-  },
-  {
-    id: "2",
-    salon_id: "1",
-    name: "Michael Chen",
-    bio: "Precision cutting specialist with a background in fashion styling for editorial shoots.",
-    specialties: ["Haircut", "Men's Styling", "Razor Cut"],
-    services: [
-      {
-        id: "201",
-        name: "Precision Cut",
-        description: "Expert precision haircut",
-        duration: 45,
-        price: 95,
-        stylist_id: "2"
-      },
-      {
-        id: "202",
-        name: "Men's Cut",
-        description: "Men's haircut and style",
-        duration: 30,
-        price: 55,
-        stylist_id: "2"
-      },
-      {
-        id: "203",
-        name: "Beard Trim",
-        description: "Beard shaping and trim",
-        duration: 20,
-        price: 25,
-        stylist_id: "2"
-      }
-    ],
-    created_at: "2023-01-02",
-    updated_at: "2023-01-02",
-    image_url: "/images/stylist2.jpg",
-    years_experience: 8
-  },
-  {
-    id: "3",
-    salon_id: "2",
-    name: "Olivia Johnson",
-    bio: "Curly hair specialist certified in DevaCurl and Ouidad cutting techniques.",
-    specialties: ["Curly Hair", "DevaCut", "Natural Hair"],
-    services: [
-      {
-        id: "301",
-        name: "DevaCut",
-        description: "Specialized cut for curly hair",
-        duration: 75,
-        price: 120,
-        stylist_id: "3"
-      },
-      {
-        id: "302",
-        name: "Curl Treatment",
-        description: "Deep conditioning for curls",
-        duration: 60,
-        price: 85,
-        stylist_id: "3"
-      },
-      {
-        id: "303",
-        name: "Style Consultation",
-        description: "Curl pattern analysis and styling tips",
-        duration: 45,
-        price: 65,
-        stylist_id: "3"
-      }
-    ],
-    created_at: "2023-01-03",
-    updated_at: "2023-01-03",
-    image_url: "/images/stylist3.jpg",
-    years_experience: 12
-  },
-  {
-    id: "4",
-    salon_id: "3",
-    name: "James Wilson",
-    bio: "Classic barber with expertise in traditional techniques and modern men's styling.",
-    specialties: ["Barber", "Fade", "Hot Towel Shave"],
-    services: [
-      {
-        id: "401",
-        name: "Classic Cut",
-        description: "Traditional men's haircut",
-        duration: 30,
-        price: 40,
-        stylist_id: "4"
-      },
-      {
-        id: "402",
-        name: "Fade",
-        description: "Precision fade haircut",
-        duration: 45,
-        price: 50,
-        stylist_id: "4"
-      },
-      {
-        id: "403",
-        name: "Hot Towel Shave",
-        description: "Traditional straight razor shave",
-        duration: 45,
-        price: 45,
-        stylist_id: "4"
-      }
-    ],
-    created_at: "2023-01-04",
-    updated_at: "2023-01-04",
-    image_url: "/images/stylist4.jpg",
-    years_experience: 15
-  }
-]
+import { useState, useEffect } from "react"
+import { getStylists } from "@/lib/api"
 
 export default function StylistsPage() {
+  const [stylists, setStylists] = useState<Stylist[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const ITEMS_PER_PAGE = 6
+
+  useEffect(() => {
+    async function fetchStylists() {
+      setIsLoading(true)
+      try {
+        const data = await getStylists({}, page, ITEMS_PER_PAGE)
+        setStylists(data)
+        // In a real implementation, you'd get the total count from the API
+        // For now, we're assuming 2 pages of data
+        setTotalPages(2)
+      } catch (error) {
+        console.error("Error fetching stylists:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchStylists()
+  }, [page])
+
   const handleFilterChange = (filters: Record<string, unknown>) => {
     console.log("Filters changed:", filters)
-    // In a real app, this would filter the stylists
+    // In a real app, this would filter the stylists by calling the API with filters
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
   }
 
   return (
@@ -169,31 +47,43 @@ export default function StylistsPage() {
 
       <SearchFilters onFilterChange={handleFilterChange} />
 
-      <div className="my-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {MOCK_STYLISTS.map((stylist) => (
-          <StylistCard
-            key={stylist.id}
-            stylist={stylist}
-            averageRating={Math.floor(Math.random() * 2) + 4} // Random rating between 4-5 for demo
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="my-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {stylists.map((stylist) => (
+            <StylistCard key={stylist.id} stylist={stylist} />
+          ))}
+        </div>
+      )}
 
       <div className="my-8 flex justify-center">
         <nav className="flex space-x-2">
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
+          <button
+            className="rounded-md border bg-white px-3 py-1 text-sm"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          >
             Previous
           </button>
-          <button className="rounded-md border bg-blue-500 px-3 py-1 text-sm text-white">
-            1
-          </button>
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
-            2
-          </button>
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
-            3
-          </button>
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <button
+              key={index}
+              className={`rounded-md border px-3 py-1 text-sm ${
+                page === index + 1 ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button
+            className="rounded-md border bg-white px-3 py-1 text-sm"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+          >
             Next
           </button>
         </nav>

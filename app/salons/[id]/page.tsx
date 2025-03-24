@@ -1,7 +1,8 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
-import { Metadata } from "next"
-import { getSalonById } from "@/lib/api"
+import { getSalonById, getStylists } from "@/lib/api"
 import { StylistCard } from "@/components/StylistCard"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,151 +15,55 @@ import {
   Car
 } from "lucide-react"
 import { Salon, Stylist } from "@/lib/types"
+import { useEffect, useState } from "react"
 
-// Mock data for demo purposes
-const SALON: Salon = {
-  id: "1",
-  name: "Elegance Hair Studio",
-  address: "123 Main St",
-  city: "Los Angeles",
-  state: "CA",
-  zip: "90001",
-  phone: "(555) 123-4567",
-  email: "info@elegancehair.com",
-  website: "https://elegancehair.example.com",
-  description:
-    "A luxury hair salon offering premium hair services in a relaxing environment. Our team of expert stylists is dedicated to providing you with the perfect look tailored to your unique style and personality. We use only the highest quality products and stay up-to-date with the latest trends and techniques.",
-  amenities: [
-    "Wi-Fi",
-    "Complimentary Drinks",
-    "Parking",
-    "Kid-Friendly",
-    "TV",
-    "Magazines"
-  ],
-  created_at: "2023-01-01",
-  updated_at: "2023-01-01",
-  image_url: "/images/salon1.jpg",
-  latitude: 34.0522,
-  longitude: -118.2437,
-  is_wheelchair_accessible: true,
-  has_parking: true,
-  price_range: 3
-}
-
-// Mock stylists for this salon
-const STYLISTS: Stylist[] = [
-  {
-    id: "1",
-    salon_id: "1",
-    name: "Jessica Smith",
-    bio: "Award-winning hair stylist with over 10 years of experience specializing in color and balayage.",
-    specialties: ["Color", "Balayage", "Curly Hair"],
-    services: [
-      {
-        id: "101",
-        name: "Haircut",
-        description: "Style cut with consultation",
-        duration: 60,
-        price: 85,
-        stylist_id: "1"
-      },
-      {
-        id: "102",
-        name: "Color",
-        description: "Full color treatment",
-        duration: 120,
-        price: 130,
-        stylist_id: "1"
-      },
-      {
-        id: "103",
-        name: "Balayage",
-        description: "Custom balayage treatment",
-        duration: 180,
-        price: 200,
-        stylist_id: "1"
-      }
-    ],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/stylist1.jpg",
-    years_experience: 10
-  },
-  {
-    id: "2",
-    salon_id: "1",
-    name: "Michael Chen",
-    bio: "Precision cutting specialist with a background in fashion styling for editorial shoots.",
-    specialties: ["Haircut", "Men's Styling", "Razor Cut"],
-    services: [
-      {
-        id: "201",
-        name: "Precision Cut",
-        description: "Expert precision haircut",
-        duration: 45,
-        price: 95,
-        stylist_id: "2"
-      },
-      {
-        id: "202",
-        name: "Men's Cut",
-        description: "Men's haircut and style",
-        duration: 30,
-        price: 55,
-        stylist_id: "2"
-      },
-      {
-        id: "203",
-        name: "Beard Trim",
-        description: "Beard shaping and trim",
-        duration: 20,
-        price: 25,
-        stylist_id: "2"
-      }
-    ],
-    created_at: "2023-01-02",
-    updated_at: "2023-01-02",
-    image_url: "/images/stylist2.jpg",
-    years_experience: 8
-  }
-]
-
-// Define dynamic metadata for this page based on salon data
-export async function generateMetadata({
-  params
-}: {
-  params: { id: string }
-}): Promise<Metadata> {
-  // In a real app, fetch the salon data using the id
-  // const salon = await getSalonById(params.id);
-  const salon = SALON
-
-  // Use the salon name in the title for SEO
-  const title = `${salon.name} - Haircuts Near Me in ${salon.city}, ${salon.state}`
-  const description = `Book haircuts, color, and styling at ${salon.name} in ${
-    salon.city
-  }. ${salon.description.substring(0, 150)}...`
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      images: salon.image_url ? [salon.image_url] : []
-    },
-    alternates: {
-      canonical: `https://haircutnearme.net/salons/${params.id}`
-    }
-  }
-}
-
-// In a real app, this would be a server component that fetches data based on the ID parameter
 export default function SalonPage({ params }: { params: { id: string } }) {
-  // In a real app: const salon = await getSalonById(params.id);
-  const salon = SALON // Using mock data for demo
+  const [salon, setSalon] = useState<Salon | null>(null)
+  const [stylists, setStylists] = useState<Stylist[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchSalonData() {
+      setIsLoading(true)
+      try {
+        const salonData = await getSalonById(params.id)
+        setSalon(salonData)
+
+        // Fetch stylists for this salon
+        const stylistsData = await getStylists({ salonId: params.id })
+        setStylists(stylistsData)
+      } catch (error) {
+        console.error("Error fetching salon data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchSalonData()
+  }, [params.id])
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto flex justify-center px-4 py-20">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (!salon) {
+    return (
+      <div className="container mx-auto px-4 py-20 text-center">
+        <h1 className="text-2xl font-bold">Salon not found</h1>
+        <p className="mt-4">We couldn't find the salon you're looking for.</p>
+        <Link
+          href="/salons"
+          className="mt-6 inline-block text-blue-500 hover:underline"
+        >
+          ← Back to Salons
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -250,111 +155,55 @@ export default function SalonPage({ params }: { params: { id: string } }) {
             )}
           </div>
 
-          <Button className="w-full" asChild>
-            <Link href={`/book?salon=${salon.id}`}>Book Appointment</Link>
-          </Button>
+          <Button className="w-full">Book Appointment</Button>
         </div>
       </div>
 
       {/* Salon description */}
-      <div className="my-8">
-        <h2 className="mb-4 text-xl font-semibold">About {salon.name}</h2>
+      <div className="my-10">
+        <h2 className="mb-4 text-2xl font-bold">About {salon.name}</h2>
         <p className="text-gray-700">{salon.description}</p>
       </div>
 
       {/* Amenities */}
-      <div className="my-8">
-        <h2 className="mb-4 text-xl font-semibold">Amenities</h2>
-        <div className="flex flex-wrap gap-2">
-          {salon.amenities.map((amenity) => (
-            <span
-              key={amenity}
-              className="rounded-full bg-gray-100 px-3 py-1 text-sm"
-            >
-              {amenity}
-            </span>
-          ))}
+      <div className="my-10">
+        <h2 className="mb-4 text-2xl font-bold">Amenities</h2>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          {salon.amenities &&
+            salon.amenities.map((amenity) => (
+              <div
+                key={amenity}
+                className="rounded-lg bg-gray-100 p-3 text-center"
+              >
+                {amenity}
+              </div>
+            ))}
         </div>
       </div>
 
       {/* Stylists */}
-      <div className="my-8">
-        <h2 className="mb-6 text-xl font-semibold">Meet Our Stylists</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {STYLISTS.map((stylist) => (
-            <StylistCard
-              key={stylist.id}
-              stylist={stylist}
-              averageRating={4.8}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Location */}
-      <div className="my-8">
-        <h2 className="mb-4 text-xl font-semibold">Location</h2>
-        <div className="relative h-80 w-full overflow-hidden rounded-lg bg-gray-200">
-          {/* This would be a real map in a production app */}
-          <div className="flex h-full items-center justify-center">
-            <p className="text-gray-500">
-              Map showing {salon.address}, {salon.city}, {salon.state}
-            </p>
+      <div className="my-10">
+        <h2 className="mb-6 text-2xl font-bold">Our Stylists</h2>
+        {stylists.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {stylists.map((stylist) => (
+              <StylistCard key={stylist.id} stylist={stylist} />
+            ))}
           </div>
-        </div>
+        ) : (
+          <p className="text-gray-500">
+            No stylists available at this salon yet.
+          </p>
+        )}
       </div>
 
-      {/* Schema.org structured data for local business */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HairSalon",
-            name: salon.name,
-            image: salon.image_url,
-            "@id": `https://haircutnearme.net/salons/${salon.id}`,
-            url: `https://haircutnearme.net/salons/${salon.id}`,
-            telephone: salon.phone,
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: salon.address,
-              addressLocality: salon.city,
-              addressRegion: salon.state,
-              postalCode: salon.zip,
-              addressCountry: "US"
-            },
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: salon.latitude,
-              longitude: salon.longitude
-            },
-            openingHoursSpecification: [
-              {
-                "@type": "OpeningHoursSpecification",
-                dayOfWeek: [
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday"
-                ],
-                opens: "09:00",
-                closes: "19:00"
-              },
-              {
-                "@type": "OpeningHoursSpecification",
-                dayOfWeek: "Saturday",
-                opens: "09:00",
-                closes: "17:00"
-              }
-            ],
-            priceRange: "$".repeat(salon.price_range),
-            hasMap: `https://maps.google.com/?q=${salon.latitude},${salon.longitude}`,
-            keywords: "haircut, salon, hair styling, barber, haircuts near me"
-          })
-        }}
-      />
+      {/* Location map placeholder */}
+      <div className="my-10">
+        <h2 className="mb-4 text-2xl font-bold">Location</h2>
+        <div className="h-80 w-full overflow-hidden rounded-lg bg-gray-200 flex items-center justify-center">
+          <span className="text-gray-500">Map would be displayed here</span>
+        </div>
+      </div>
     </div>
   )
 }

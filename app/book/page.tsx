@@ -1,116 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Stylist, Salon, Service } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createAppointment } from "@/lib/api"
+import {
+  createAppointment,
+  getStylistById,
+  getSalonById,
+  getStylists
+} from "@/lib/api"
 import { Calendar, Clock, ArrowRight, Check } from "lucide-react"
 
-// Mock data for demo purposes
-const STYLISTS: Record<string, Stylist> = {
-  "1": {
-    id: "1",
-    salon_id: "1",
-    name: "Jessica Smith",
-    bio: "Award-winning hair stylist with over 10 years of experience specializing in color and balayage.",
-    specialties: ["Color", "Balayage", "Curly Hair"],
-    services: [
-      {
-        id: "101",
-        name: "Haircut & Style",
-        description: "Precision cut with consultation",
-        duration: 60,
-        price: 85,
-        stylist_id: "1"
-      },
-      {
-        id: "102",
-        name: "Color",
-        description: "Full color treatment",
-        duration: 120,
-        price: 130,
-        stylist_id: "1"
-      },
-      {
-        id: "103",
-        name: "Balayage",
-        description: "Custom balayage treatment",
-        duration: 180,
-        price: 200,
-        stylist_id: "1"
-      }
-    ],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/stylist1.jpg",
-    years_experience: 10
-  },
-  "2": {
-    id: "2",
-    salon_id: "1",
-    name: "Michael Chen",
-    bio: "Precision cutting specialist with a background in fashion styling for editorial shoots.",
-    specialties: ["Haircut", "Men's Styling", "Razor Cut"],
-    services: [
-      {
-        id: "201",
-        name: "Precision Cut",
-        description: "Expert precision haircut",
-        duration: 45,
-        price: 95,
-        stylist_id: "2"
-      },
-      {
-        id: "202",
-        name: "Men's Cut",
-        description: "Men's haircut and style",
-        duration: 30,
-        price: 55,
-        stylist_id: "2"
-      },
-      {
-        id: "203",
-        name: "Beard Trim",
-        description: "Beard shaping and trim",
-        duration: 20,
-        price: 25,
-        stylist_id: "2"
-      }
-    ],
-    created_at: "2023-01-02",
-    updated_at: "2023-01-02",
-    image_url: "/images/stylist2.jpg",
-    years_experience: 8
-  }
-}
-
-const SALONS: Record<string, Salon> = {
-  "1": {
-    id: "1",
-    name: "Elegance Hair Studio",
-    address: "123 Main St",
-    city: "Los Angeles",
-    state: "CA",
-    zip: "90001",
-    phone: "(555) 123-4567",
-    email: "info@elegancehair.com",
-    description:
-      "A luxury hair salon offering premium hair services in a relaxing environment.",
-    amenities: ["Wi-Fi", "Complimentary Drinks", "Parking"],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/salon1.jpg",
-    is_wheelchair_accessible: true,
-    has_parking: true,
-    price_range: 3
-  }
-}
-
-// Available time slots for demo
+// Available time slots
 const AVAILABLE_TIMES = [
   "9:00 AM",
   "9:30 AM",
@@ -157,12 +62,71 @@ export default function BookPage() {
   })
   const [bookingComplete, setBookingComplete] = useState(false)
 
-  const selectedStylist = selectedStylistId ? STYLISTS[selectedStylistId] : null
+  const [stylists, setStylists] = useState<Record<string, Stylist>>({})
+  const [salons, setSalons] = useState<Record<string, Salon>>({})
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true)
+      try {
+        // If we have an initial stylist ID, fetch that stylist
+        if (initialStylistId) {
+          const stylist = await getStylistById(initialStylistId)
+          setStylists((prev) => ({ ...prev, [stylist.id]: stylist }))
+
+          // Also fetch the salon this stylist works at
+          if (stylist.salon_id) {
+            const salon = await getSalonById(stylist.salon_id)
+            setSalons((prev) => ({ ...prev, [salon.id]: salon }))
+          }
+        }
+        // If we have an initial salon ID, fetch stylists for that salon
+        else if (initialSalonId) {
+          const salon = await getSalonById(initialSalonId)
+          setSalons((prev) => ({ ...prev, [salon.id]: salon }))
+
+          // Fetch stylists for this salon
+          const salonStylists = await getStylists({ salonId: initialSalonId })
+          const stylistsMap = salonStylists.reduce((acc, stylist) => {
+            acc[stylist.id] = stylist
+            return acc
+          }, {} as Record<string, Stylist>)
+          setStylists(stylistsMap)
+        }
+        // Otherwise, fetch a selection of stylists
+        else {
+          const allStylists = await getStylists({}, 1, 10)
+          const stylistsMap = allStylists.reduce((acc, stylist) => {
+            acc[stylist.id] = stylist
+            return acc
+          }, {} as Record<string, Stylist>)
+          setStylists(stylistsMap)
+
+          // Fetch salons for these stylists
+          for (const stylist of allStylists) {
+            if (stylist.salon_id && !salons[stylist.salon_id]) {
+              const salon = await getSalonById(stylist.salon_id)
+              setSalons((prev) => ({ ...prev, [salon.id]: salon }))
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching booking data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [initialStylistId, initialSalonId])
+
+  const selectedStylist = selectedStylistId ? stylists[selectedStylistId] : null
   const salonId = selectedStylist?.salon_id || initialSalonId
-  const salon = salonId ? SALONS[salonId] : null
+  const salon = salonId ? salons[salonId] : null
 
   const selectedService =
-    selectedStylist && selectedServiceId
+    selectedStylist && selectedServiceId && selectedStylist.services
       ? selectedStylist.services.find((s) => s.id === selectedServiceId)
       : null
 
@@ -205,10 +169,25 @@ export default function BookPage() {
       return
     }
 
-    // In a real app, this would call the API to create the appointment
-    // For the demo, we'll just simulate success
-    setBookingComplete(true)
-    setStep("confirmation")
+    try {
+      // In a real app, this would call the API to create the appointment
+      await createAppointment({
+        stylist_id: selectedStylistId,
+        service_id: selectedServiceId,
+        date: selectedDate,
+        time: selectedTime,
+        customer_name: `${bookingDetails.firstName} ${bookingDetails.lastName}`,
+        customer_email: bookingDetails.email,
+        customer_phone: bookingDetails.phone,
+        notes: bookingDetails.notes,
+        status: "pending"
+      })
+      setBookingComplete(true)
+      setStep("confirmation")
+    } catch (error) {
+      console.error("Error creating appointment:", error)
+      alert("There was a problem booking your appointment. Please try again.")
+    }
   }
 
   // Generate dates for the next 14 days
@@ -217,6 +196,14 @@ export default function BookPage() {
     date.setDate(date.getDate() + i)
     return date.toISOString().split("T")[0]
   })
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto flex justify-center px-4 py-20">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -249,7 +236,7 @@ export default function BookPage() {
                 : "text-gray-500"
             }`}
           >
-            3. Date & Time
+            3. Choose Date & Time
           </div>
           <div
             className={`pb-2 px-4 ${
@@ -260,15 +247,6 @@ export default function BookPage() {
           >
             4. Your Details
           </div>
-          <div
-            className={`pb-2 px-4 ${
-              step === "confirmation"
-                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-                : "text-gray-500"
-            }`}
-          >
-            5. Confirmation
-          </div>
         </div>
       </div>
 
@@ -277,7 +255,7 @@ export default function BookPage() {
         <div>
           <h2 className="mb-4 text-xl font-semibold">Choose a Stylist</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Object.values(STYLISTS).map((stylist) => (
+            {Object.values(stylists).map((stylist) => (
               <div
                 key={stylist.id}
                 className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md ${
@@ -304,7 +282,7 @@ export default function BookPage() {
                       {stylist.specialties.slice(0, 3).join(", ")}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {SALONS[stylist.salon_id].name}
+                      {salons[stylist.salon_id].name}
                     </p>
                   </div>
                 </div>

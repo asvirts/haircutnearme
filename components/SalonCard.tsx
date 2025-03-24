@@ -17,7 +17,7 @@ interface SalonCardProps {
 
 export function SalonCard({ salon }: SalonCardProps) {
   // Safely handle potentially undefined values
-  const thumbnailSrc = salon?.thumbnail || "/images/placeholder-salon.jpg"
+  const thumbnailSrc = salon?.thumbnail || "https://placehold.co/1200x768"
   const title = salon?.title || "Salon"
   const address = salon?.address || "Address unavailable"
   const reviewRating = salon?.review_rating || "N/A"
@@ -46,10 +46,7 @@ export function SalonCard({ salon }: SalonCardProps) {
       </div>
       <CardHeader>
         <CardTitle>
-          <Link
-            href={`/salons/${salonId}`}
-            className="hover:underline"
-          >
+          <Link href={`/salons/${salonId}`} className="hover:underline">
             {title}
           </Link>
         </CardTitle>
@@ -71,9 +68,7 @@ export function SalonCard({ salon }: SalonCardProps) {
           {phone && (
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              <a href={`tel:${phone}`}>
-                {phone}
-              </a>
+              <a href={`tel:${phone}`}>{phone}</a>
             </div>
           )}
           {openHours && (
@@ -82,8 +77,7 @@ export function SalonCard({ salon }: SalonCardProps) {
               <span>
                 {Array.isArray(openHours)
                   ? "Hours available"
-                  : typeof openHours === "object" &&
-                    openHours.today
+                  : typeof openHours === "object" && openHours.today
                   ? openHours.today
                   : "Hours available"}
               </span>

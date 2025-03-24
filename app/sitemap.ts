@@ -1,12 +1,20 @@
 import { MetadataRoute } from "next"
 import { Salon } from "@/lib/types"
+import { supabase } from "@/lib/supabase"
 
-// In a real app, this would fetch all salon IDs from the database
-const getMockSalonIds = (): string[] => {
-  return ["1", "2", "3", "4", "5"]
+// Now we fetch all salon IDs from Supabase
+const getSalonIds = async (): Promise<string[]> => {
+  const { data, error } = await supabase.from("salons").select("id")
+
+  if (error) {
+    console.error("Error fetching salon IDs for sitemap:", error)
+    return []
+  }
+
+  return data.map((salon) => salon.id.toString())
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://haircutnearme.net"
 
   // Static routes
@@ -73,9 +81,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   ]
 
-  // Dynamic salon routes
-  // In a real app, you'd fetch all salon IDs from your database
-  const salonIds = getMockSalonIds()
+  // Dynamic salon routes - fetch real salon IDs from Supabase
+  const salonIds = await getSalonIds()
 
   const salonRoutes = salonIds.map((id) => ({
     url: `${baseUrl}/salons/${id}`,

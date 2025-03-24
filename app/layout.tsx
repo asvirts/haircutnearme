@@ -33,13 +33,12 @@ export default function RootLayout({
           content="your-verification-code"
         />
         <link rel="canonical" href="https://haircutnearme.net" />
-        <GoogleAdsenseScript />
-        {/* Remove or replace the example script that's causing errors */}
       </head>
       <body className="antialiased min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />
+        <GoogleAdsenseScript />
       </body>
     </html>
   )

@@ -3,129 +3,42 @@
 import { SearchFilters } from "@/components/SearchFilters"
 import { SalonCard } from "@/components/SalonCard"
 import { Salon } from "@/lib/types"
-
-// This would be a server component in a real app
-// For demo purposes, using mock data
-const MOCK_SALONS: Salon[] = [
-  {
-    id: "1",
-    name: "Elegance Hair Studio",
-    address: "123 Main St",
-    city: "Los Angeles",
-    state: "CA",
-    zip: "90001",
-    phone: "(555) 123-4567",
-    email: "info@elegancehair.com",
-    description:
-      "A luxury hair salon offering premium hair services in a relaxing environment.",
-    amenities: ["Wi-Fi", "Complimentary Drinks", "Parking"],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/salon1.jpg",
-    is_wheelchair_accessible: true,
-    has_parking: true,
-    price_range: 3
-  },
-  {
-    id: "2",
-    name: "Modern Cuts",
-    address: "456 Elm St",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    phone: "(555) 987-6543",
-    email: "hello@moderncuts.com",
-    description:
-      "Trendy salon specializing in the latest hair styles and techniques.",
-    amenities: ["Wi-Fi", "Kid-Friendly"],
-    created_at: "2023-01-02",
-    updated_at: "2023-01-02",
-    image_url: "/images/salon2.jpg",
-    is_wheelchair_accessible: true,
-    has_parking: false,
-    price_range: 2
-  },
-  {
-    id: "3",
-    name: "Classic Barber Shop",
-    address: "789 Oak St",
-    city: "Chicago",
-    state: "IL",
-    zip: "60007",
-    phone: "(555) 456-7890",
-    email: "info@classicbarber.com",
-    description: "Traditional barbershop offering classic cuts and hot shaves.",
-    amenities: ["Free Drinks", "TV"],
-    created_at: "2023-01-03",
-    updated_at: "2023-01-03",
-    image_url: "/images/salon3.jpg",
-    is_wheelchair_accessible: false,
-    has_parking: true,
-    price_range: 1
-  },
-  {
-    id: "4",
-    name: "Urban Style Lounge",
-    address: "101 High St",
-    city: "Boston",
-    state: "MA",
-    zip: "02108",
-    phone: "(555) 222-3333",
-    email: "hello@urbanstylesalon.com",
-    description:
-      "Modern salon specializing in urban and contemporary hairstyles.",
-    amenities: ["Wi-Fi", "Coffee Bar", "Parking"],
-    created_at: "2023-01-04",
-    updated_at: "2023-01-04",
-    image_url: "/images/salon4.jpg",
-    is_wheelchair_accessible: true,
-    has_parking: true,
-    price_range: 3
-  },
-  {
-    id: "5",
-    name: "The Hair Loft",
-    address: "222 Maple Ave",
-    city: "Austin",
-    state: "TX",
-    zip: "73301",
-    phone: "(555) 444-5555",
-    email: "info@hairloft.com",
-    description:
-      "Boutique salon offering personalized hair services in a relaxed setting.",
-    amenities: ["Free Drinks", "Wi-Fi", "Kid-Friendly"],
-    created_at: "2023-01-05",
-    updated_at: "2023-01-05",
-    image_url: "/images/salon5.jpg",
-    is_wheelchair_accessible: false,
-    has_parking: true,
-    price_range: 2
-  },
-  {
-    id: "6",
-    name: "Prestige Cuts",
-    address: "333 Pine St",
-    city: "Seattle",
-    state: "WA",
-    zip: "98101",
-    phone: "(555) 666-7777",
-    email: "contact@prestigecuts.com",
-    description:
-      "High-end salon providing luxury hair services and treatments.",
-    amenities: ["Valet Parking", "Refreshments", "Wi-Fi"],
-    created_at: "2023-01-06",
-    updated_at: "2023-01-06",
-    image_url: "/images/salon6.jpg",
-    is_wheelchair_accessible: true,
-    has_parking: true,
-    price_range: 4
-  }
-]
+import { useState, useEffect } from "react"
+import { getSalons } from "@/lib/api"
 
 export default function SalonsPage() {
+  const [salons, setSalons] = useState<Salon[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const ITEMS_PER_PAGE = 6
+
+  useEffect(() => {
+    async function fetchSalons() {
+      setIsLoading(true)
+      try {
+        const data = await getSalons({}, page, ITEMS_PER_PAGE)
+        setSalons(data)
+        // In a real implementation, you'd get the total count from the API
+        // For now, we're assuming 2 pages of data
+        setTotalPages(2)
+      } catch (error) {
+        console.error("Error fetching salons:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchSalons()
+  }, [page])
+
   const handleFilterChange = (filters: Record<string, unknown>) => {
     console.log("Filters changed:", filters)
-    // In a real app, this would filter the salons
+    // In a real app, this would filter the salons by calling the API with filters
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
   }
 
   return (
@@ -134,27 +47,43 @@ export default function SalonsPage() {
 
       <SearchFilters onFilterChange={handleFilterChange} />
 
-      <div className="my-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {MOCK_SALONS.map((salon) => (
-          <SalonCard key={salon.id} salon={salon} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="my-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {salons.map((salon) => (
+            <SalonCard key={salon.id} salon={salon} />
+          ))}
+        </div>
+      )}
 
       <div className="my-8 flex justify-center">
         <nav className="flex space-x-2">
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
+          <button
+            className="rounded-md border bg-white px-3 py-1 text-sm"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+          >
             Previous
           </button>
-          <button className="rounded-md border bg-blue-500 px-3 py-1 text-sm text-white">
-            1
-          </button>
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
-            2
-          </button>
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
-            3
-          </button>
-          <button className="rounded-md border bg-white px-3 py-1 text-sm">
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <button
+              key={index}
+              className={`rounded-md border px-3 py-1 text-sm ${
+                page === index + 1 ? "bg-blue-500 text-white" : "bg-white"
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button
+            className="rounded-md border bg-white px-3 py-1 text-sm"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+          >
             Next
           </button>
         </nav>
