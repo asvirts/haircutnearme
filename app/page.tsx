@@ -1,13 +1,14 @@
 "use client"
 
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { SearchFilters } from "@/components/SearchFilters"
 import { SalonCard } from "@/components/SalonCard"
 import { Button } from "@/components/ui/button"
 import { MapPin, Calendar, Star } from "lucide-react"
-import { MapPin, Calendar, Star } from "lucide-react"
 import { Salon } from "@/lib/types"
 import Head from "next/head"
+import { getSalons } from "@/lib/api"
 
 // Mock data - in a real app, would come from the local JSON database
 const FEATURED_SALONS: Salon[] = [

@@ -1,5 +1,11 @@
 import { StaticImageData } from "next/image"
 
+// Define PageProps type compatible with Next.js App Router
+export type PageProps<P = {}, S = {}> = {
+  params: P
+  searchParams: S
+}
+
 export type Salon = {
   id: string | number
   input_id?: string

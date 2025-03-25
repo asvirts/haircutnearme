@@ -1,6 +1,5 @@
-import fs from "fs"
-import path from "path"
 import { Appointment, Review, Salon, Service } from "./types"
+import { MOCK_DB } from "./mockData"
 
 // Database structure
 export interface JsonDB {
@@ -10,32 +9,15 @@ export interface JsonDB {
   appointments: Appointment[]
 }
 
-// Database file path
-const dbPath = path.join(process.cwd(), "data", "db.json")
-
 // Read the database
-export function readDb(): JsonDB {
-  try {
-    const data = fs.readFileSync(dbPath, "utf8")
-    return JSON.parse(data)
-  } catch (error) {
-    console.error("Error reading database:", error)
-    return {
-      salons: [],
-      services: [],
-      reviews: [],
-      appointments: []
-    }
-  }
+export async function readDb(): Promise<JsonDB> {
+  return MOCK_DB
 }
 
 // Write to the database
-export function writeDb(db: JsonDB): void {
-  try {
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2))
-  } catch (error) {
-    console.error("Error writing database:", error)
-  }
+export async function writeDb(db: JsonDB): Promise<void> {
+  console.warn("writeDb called - operation not supported in this environment")
+  return
 }
 
 // Generate a unique ID

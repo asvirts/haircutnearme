@@ -14,16 +14,15 @@ import { getSalonById } from "@/lib/api"
 import { adaptSalonToAppFormat, getBusinessHours } from "@/lib/dataAdapter"
 import { SalonImageGallery } from "@/components/SalonImageGallery"
 import { BusinessHours } from "../../../components/BusinessHours"
+import type { PageProps } from "@/lib/types"
 
 // Define dynamic metadata for this page based on salon data
 export async function generateMetadata({
   params
-}: {
-  params: { id: string }
-}): Promise<Metadata> {
+}: PageProps<{ id: string }>): Promise<Metadata> {
   try {
-    // Properly await params before accessing its properties
-    const { id } = await params
+    // Get the id directly from params
+    const { id } = params
 
     // Fetch real salon data using the id
     const dbSalon = await getSalonById(id)
@@ -57,13 +56,9 @@ export async function generateMetadata({
   }
 }
 
-export default async function SalonPage({
-  params
-}: {
-  params: { id: string }
-}) {
-  // Properly await params before accessing its properties
-  const { id } = await params
+export default async function SalonPage({ params }: PageProps<{ id: string }>) {
+  // Get the id directly from params
+  const { id } = params
 
   // Fetch the salon data from our database
   const dbSalon = await getSalonById(id)
