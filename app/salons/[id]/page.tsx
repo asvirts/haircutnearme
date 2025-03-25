@@ -123,10 +123,14 @@ export default async function SalonPage({
 
         {/* Right column - Salon info */}
         <div>
-          <h1 className="mb-2 text-3xl font-bold">{salon.name}</h1>
+          <h1 className="mb-2 text-3xl font-bold">{salon.title}</h1>
 
           <div className="mb-4 flex items-center gap-1">
-            {Array.from({ length: salon.price_range }).map((_, i) => (
+            {Array.from({
+              length: salon.price_range.includes("$")
+                ? salon.price_range.length
+                : 1
+            }).map((_, i) => (
               <DollarSign key={i} className="h-4 w-4 text-green-600" />
             ))}
             <span className="ml-2 text-sm text-gray-500">Price Range</span>
@@ -178,30 +182,17 @@ export default async function SalonPage({
           </div>
 
           <div className="mb-6 flex flex-wrap gap-2">
-            {salon.is_wheelchair_accessible && (
-              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                <Accessibility className="h-4 w-4" />
-                Wheelchair Accessible
-              </span>
-            )}
-            {salon.has_parking && (
-              <span className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800">
-                <Car className="h-4 w-4" />
-                Parking Available
-              </span>
-            )}
+            {/* Accessibility features would be added here if available in the API */}
           </div>
 
-          <Button className="w-full" asChild>
-            <Link href={`/book?salon=${salon.id}`}>Book Appointment</Link>
-          </Button>
+          <Button className="w-full">Book Appointment</Button>
         </div>
       </div>
 
       {/* Salon description */}
-      <div className="my-8">
-        <h2 className="mb-4 text-xl font-semibold">About {salon.name}</h2>
-        <p className="text-gray-700">{salon.description}</p>
+      <div className="my-10">
+        <h2 className="mb-4 text-2xl font-bold">About {salon.title}</h2>
+        <p className="text-gray-700">{salon.descriptions}</p>
       </div>
 
       {/* Amenities */}
@@ -237,58 +228,6 @@ export default async function SalonPage({
           ></iframe>
         </div>
       </div>
-
-      {/* Schema.org structured data for local business */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "HairSalon",
-            name: salon.name,
-            image: salon.image_url,
-            "@id": `https://haircutnearme.net/salons/${salon.id}`,
-            url: `https://haircutnearme.net/salons/${salon.id}`,
-            telephone: salon.phone,
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: salon.address,
-              addressLocality: salon.city,
-              addressRegion: salon.state,
-              postalCode: salon.zip,
-              addressCountry: "US"
-            },
-            geo: {
-              "@type": "GeoCoordinates",
-              latitude: salon.latitude,
-              longitude: salon.longitude
-            },
-            openingHoursSpecification: [
-              {
-                "@type": "OpeningHoursSpecification",
-                dayOfWeek: [
-                  "Monday",
-                  "Tuesday",
-                  "Wednesday",
-                  "Thursday",
-                  "Friday"
-                ],
-                opens: "09:00",
-                closes: "19:00"
-              },
-              {
-                "@type": "OpeningHoursSpecification",
-                dayOfWeek: "Saturday",
-                opens: "09:00",
-                closes: "17:00"
-              }
-            ],
-            priceRange: "$".repeat(salon.price_range),
-            hasMap: `https://maps.google.com/?q=${salon.latitude},${salon.longitude}`,
-            keywords: "haircut, salon, hair styling, barber, haircuts near me"
-          })
-        }}
-      />
     </div>
   )
 }

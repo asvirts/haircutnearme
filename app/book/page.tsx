@@ -1,116 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Stylist, Salon, Service } from "@/lib/types"
+import { Stylist, Salon } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createAppointment } from "@/lib/api"
+import {
+  createAppointment,
+  getStylistById,
+  getSalonById,
+  getStylists
+} from "@/lib/api"
 import { Calendar, Clock, ArrowRight, Check } from "lucide-react"
 
-// Mock data for demo purposes
-const STYLISTS: Record<string, Stylist> = {
-  "1": {
-    id: "1",
-    salon_id: "1",
-    name: "Jessica Smith",
-    bio: "Award-winning hair stylist with over 10 years of experience specializing in color and balayage.",
-    specialties: ["Color", "Balayage", "Curly Hair"],
-    services: [
-      {
-        id: "101",
-        name: "Haircut & Style",
-        description: "Precision cut with consultation",
-        duration: 60,
-        price: 85,
-        stylist_id: "1"
-      },
-      {
-        id: "102",
-        name: "Color",
-        description: "Full color treatment",
-        duration: 120,
-        price: 130,
-        stylist_id: "1"
-      },
-      {
-        id: "103",
-        name: "Balayage",
-        description: "Custom balayage treatment",
-        duration: 180,
-        price: 200,
-        stylist_id: "1"
-      }
-    ],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/stylist1.jpg",
-    years_experience: 10
-  },
-  "2": {
-    id: "2",
-    salon_id: "1",
-    name: "Michael Chen",
-    bio: "Precision cutting specialist with a background in fashion styling for editorial shoots.",
-    specialties: ["Haircut", "Men's Styling", "Razor Cut"],
-    services: [
-      {
-        id: "201",
-        name: "Precision Cut",
-        description: "Expert precision haircut",
-        duration: 45,
-        price: 95,
-        stylist_id: "2"
-      },
-      {
-        id: "202",
-        name: "Men's Cut",
-        description: "Men's haircut and style",
-        duration: 30,
-        price: 55,
-        stylist_id: "2"
-      },
-      {
-        id: "203",
-        name: "Beard Trim",
-        description: "Beard shaping and trim",
-        duration: 20,
-        price: 25,
-        stylist_id: "2"
-      }
-    ],
-    created_at: "2023-01-02",
-    updated_at: "2023-01-02",
-    image_url: "/images/stylist2.jpg",
-    years_experience: 8
-  }
-}
-
-const SALONS: Record<string, Salon> = {
-  "1": {
-    id: "1",
-    name: "Elegance Hair Studio",
-    address: "123 Main St",
-    city: "Los Angeles",
-    state: "CA",
-    zip: "90001",
-    phone: "(555) 123-4567",
-    email: "info@elegancehair.com",
-    description:
-      "A luxury hair salon offering premium hair services in a relaxing environment.",
-    amenities: ["Wi-Fi", "Complimentary Drinks", "Parking"],
-    created_at: "2023-01-01",
-    updated_at: "2023-01-01",
-    image_url: "/images/salon1.jpg",
-    is_wheelchair_accessible: true,
-    has_parking: true,
-    price_range: 3
-  }
-}
-
-// Available time slots for demo
+// Available time slots
 const AVAILABLE_TIMES = [
   "9:00 AM",
   "9:30 AM",
@@ -118,17 +23,25 @@ const AVAILABLE_TIMES = [
   "10:30 AM",
   "11:00 AM",
   "11:30 AM",
+  "12:00 PM",
+  "12:30 PM",
   "1:00 PM",
   "1:30 PM",
   "2:00 PM",
   "2:30 PM",
   "3:00 PM",
-  "3:30 PM"
+  "3:30 PM",
+  "4:00 PM",
+  "4:30 PM",
+  "5:00 PM",
+  "5:30 PM",
+  "6:00 PM"
 ]
 
 type BookingStep = "service" | "datetime" | "details" | "confirmation"
 
-export default function BookPage() {
+// BookingForm component that uses useSearchParams
+function BookingForm() {
   const searchParams = useSearchParams()
   const initialSalonId = searchParams.get("salon")
   const initialServiceId = searchParams.get("service")
@@ -178,7 +91,7 @@ export default function BookPage() {
     setBookingDetails((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     if (!selectedServiceId || !selectedDate || !selectedTime) {
@@ -186,10 +99,26 @@ export default function BookPage() {
       return
     }
 
-    // In a real app, this would call the API to create the appointment
-    // For the demo, we'll just simulate success
-    setBookingComplete(true)
-    setStep("confirmation")
+    try {
+      // In a real app, this would call the API to create the appointment
+      await createAppointment({
+        stylist_id: selectedStylistId,
+        service_id: selectedServiceId,
+        date: selectedDate,
+        time: selectedTime,
+        duration: selectedService.duration,
+        customer_name: `${bookingDetails.firstName} ${bookingDetails.lastName}`,
+        customer_email: bookingDetails.email,
+        customer_phone: bookingDetails.phone,
+        notes: bookingDetails.notes,
+        status: "pending"
+      })
+      setBookingComplete(true)
+      setStep("confirmation")
+    } catch (error) {
+      console.error("Error creating appointment:", error)
+      alert("There was a problem booking your appointment. Please try again.")
+    }
   }
 
   // Generate dates for the next 14 days
@@ -198,6 +127,14 @@ export default function BookPage() {
     date.setDate(date.getDate() + i)
     return date.toISOString().split("T")[0]
   })
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto flex justify-center px-4 py-20">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -249,7 +186,7 @@ export default function BookPage() {
         <div>
           <h2 className="mb-4 text-xl font-semibold">Select a Service</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Object.values(STYLISTS).map((stylist) => (
+            {Object.values(stylists).map((stylist) => (
               <div
                 key={stylist.id}
                 className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md ${
@@ -270,13 +207,12 @@ export default function BookPage() {
                       className="object-cover"
                     />
                   </div>
-                  <div>
-                    <h3 className="font-medium">{stylist.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {stylist.specialties.slice(0, 3).join(", ")}
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-900">
+                      {stylist.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {SALONS[stylist.salon_id].name}
+                      {salons[stylist.salon_id].title}
                     </p>
                   </div>
                 </div>
@@ -610,5 +546,14 @@ export default function BookPage() {
         </div>
       )}
     </div>
+  )
+}
+
+// Main page component with Suspense
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Loading booking form...</div>}>
+      <BookingForm />
+    </Suspense>
   )
 }

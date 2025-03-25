@@ -5,6 +5,7 @@ import { SearchFilters } from "@/components/SearchFilters"
 import { SalonCard } from "@/components/SalonCard"
 import { Button } from "@/components/ui/button"
 import { MapPin, Calendar, Star } from "lucide-react"
+import { MapPin, Calendar, Star } from "lucide-react"
 import { Salon } from "@/lib/types"
 import Head from "next/head"
 
@@ -199,6 +200,24 @@ const FEATURED_SALONS: Salon[] = [
 ]
 
 export default function Home() {
+  const [featuredSalons, setFeaturedSalons] = useState<Salon[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchFeaturedSalons() {
+      try {
+        const salons = await getSalons({}, 1, 3) // Limit to 3 featured salons
+        setFeaturedSalons(salons)
+      } catch (error) {
+        console.error("Error fetching salons:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchFeaturedSalons()
+  }, [])
+
   const handleFilterChange = (filters: Record<string, unknown>) => {
     console.log("Filters changed:", filters)
     // In a real app, this would be used for search/filtering
@@ -289,24 +308,29 @@ export default function Home() {
       </section>
 
       {/* Featured salons section */}
-      <section
-        className="bg-gray-50 py-16"
-        aria-labelledby="featured-salons-heading"
-      >
+      <section className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 id="featured-salons-heading" className="text-2xl font-bold">
-              Top-Rated Haircut Salons Near Me
-            </h2>
-            <Button variant="outline" asChild>
-              <Link href="/salons">View All Hair Salons</Link>
-            </Button>
+          <div className="mb-10 flex items-center justify-between">
+            <h2 className="text-3xl font-bold">Featured Salons</h2>
+            <Link
+              href="/salons"
+              className="text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              View all salons
+            </Link>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURED_SALONS.map((salon) => (
-              <SalonCard key={salon.id} salon={salon} />
-            ))}
-          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredSalons.map((salon) => (
+                <SalonCard key={salon.id} salon={salon} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

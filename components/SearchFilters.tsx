@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { MapPin, DollarSign, Search, Filter, X } from "lucide-react"
+import { MapPin, Search, Filter, X } from "lucide-react"
 
 type FilterValues = {
   location: string
@@ -46,7 +46,7 @@ export function SearchFilters({
 
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(false)
 
-  const handleInputChange = (field: keyof FilterValues, value: any) => {
+  const handleInputChange = (field: keyof FilterValues, value: unknown) => {
     const newFilters = { ...filters, [field]: value }
     setFilters(newFilters)
   }
