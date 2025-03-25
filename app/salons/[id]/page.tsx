@@ -1,35 +1,23 @@
 import Link from "next/link"
 import { Metadata } from "next"
 import { Button } from "@/components/ui/button"
-import {
-  MapPin,
-  Phone,
-  Globe,
-  Clock,
-  DollarSign,
-  Accessibility,
-  Car
-} from "lucide-react"
+import { MapPin, Phone, Globe, Clock, DollarSign } from "lucide-react"
 import { getSalonById } from "@/lib/api"
 import { adaptSalonToAppFormat, getBusinessHours } from "@/lib/dataAdapter"
 import { SalonImageGallery } from "@/components/SalonImageGallery"
 import { BusinessHours } from "../../../components/BusinessHours"
 
-// Define dynamic metadata for this page based on salon data
+// Define dynamic metadata
 export async function generateMetadata({
   params
 }: {
   params: { id: string }
 }): Promise<Metadata> {
   try {
-    // Get the id directly from params
     const { id } = params
-
-    // Fetch real salon data using the id
     const dbSalon = await getSalonById(id)
     const salon = adaptSalonToAppFormat(dbSalon)
 
-    // Use the salon name in the title for SEO
     const title = `${salon.name} - Haircuts Near Me in ${salon.city}, ${salon.state}`
     const description = `Book haircuts, color, and styling at ${
       salon.name
@@ -49,7 +37,6 @@ export async function generateMetadata({
       }
     }
   } catch {
-    // Fallback metadata if salon not found
     return {
       title: "Salon Details - Haircuts Near Me",
       description: "Find the perfect salon for your next haircut."
@@ -57,19 +44,11 @@ export async function generateMetadata({
   }
 }
 
-export default async function SalonPage({
-  params
-}: {
-  params: { id: string }
-}) {
-  // Get the id directly from params
+// Page component
+export default async function Page({ params }: { params: { id: string } }) {
   const { id } = params
-
-  // Fetch the salon data from our database
   const dbSalon = await getSalonById(id)
   const salon = adaptSalonToAppFormat(dbSalon)
-
-  // Get business hours from the database
   const businessHours = getBusinessHours(dbSalon)
 
   // Order days of the week properly
