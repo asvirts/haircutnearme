@@ -1,5 +1,4 @@
 import { MetadataRoute } from "next"
-import { supabase } from "@/lib/supabase"
 
 // Now we fetch all salon IDs from Supabase
 const getSalonIds = async (): Promise<string[]> => {

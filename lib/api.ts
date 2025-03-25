@@ -1,5 +1,5 @@
 import { readDb } from "./jsonDb"
-import { Appointment, Review, Salon, Service } from "./types"
+import { Appointment } from "./types"
 
 // Salon API functions
 export async function getSalons({
