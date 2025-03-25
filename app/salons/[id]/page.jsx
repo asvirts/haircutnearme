@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Metadata } from "next"
 import { Button } from "@/components/ui/button"
 import { MapPin, Phone, Globe, Clock, DollarSign } from "lucide-react"
 import { getSalonById } from "@/lib/api"
@@ -8,13 +7,9 @@ import { SalonImageGallery } from "@/components/SalonImageGallery"
 import { BusinessHours } from "../../../components/BusinessHours"
 
 // Define dynamic metadata
-export async function generateMetadata({
-  params
-}: {
-  params: { id: string }
-}): Promise<Metadata> {
+export async function generateMetadata(props) {
   try {
-    const { id } = params
+    const id = props.params.id
     const dbSalon = await getSalonById(id)
     const salon = adaptSalonToAppFormat(dbSalon)
 
@@ -45,8 +40,8 @@ export async function generateMetadata({
 }
 
 // Page component
-export default async function Page({ params }: { params: { id: string } }) {
-  const { id } = params
+export default async function Page(props) {
+  const id = props.params.id
   const dbSalon = await getSalonById(id)
   const salon = adaptSalonToAppFormat(dbSalon)
   const businessHours = getBusinessHours(dbSalon)
