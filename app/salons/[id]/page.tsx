@@ -14,12 +14,13 @@ import { getSalonById } from "@/lib/api"
 import { adaptSalonToAppFormat, getBusinessHours } from "@/lib/dataAdapter"
 import { SalonImageGallery } from "@/components/SalonImageGallery"
 import { BusinessHours } from "../../../components/BusinessHours"
-import type { PageProps } from "@/lib/types"
 
 // Define dynamic metadata for this page based on salon data
 export async function generateMetadata({
   params
-}: PageProps<{ id: string }>): Promise<Metadata> {
+}: {
+  params: { id: string }
+}): Promise<Metadata> {
   try {
     // Get the id directly from params
     const { id } = params
@@ -56,7 +57,11 @@ export async function generateMetadata({
   }
 }
 
-export default async function SalonPage({ params }: PageProps<{ id: string }>) {
+export default async function SalonPage({
+  params
+}: {
+  params: { id: string }
+}) {
   // Get the id directly from params
   const { id } = params
 
@@ -118,13 +123,12 @@ export default async function SalonPage({ params }: PageProps<{ id: string }>) {
 
         {/* Right column - Salon info */}
         <div>
-          <h1 className="mb-2 text-3xl font-bold">{salon.title}</h1>
+          <h1 className="mb-2 text-3xl font-bold">{salon.name}</h1>
 
           <div className="mb-4 flex items-center gap-1">
             {Array.from({
-              length: salon.price_range.includes("$")
-                ? salon.price_range.length
-                : 1
+              length:
+                typeof salon.price_range === "number" ? salon.price_range : 1
             }).map((_, i) => (
               <DollarSign key={i} className="h-4 w-4 text-green-600" />
             ))}
@@ -186,8 +190,8 @@ export default async function SalonPage({ params }: PageProps<{ id: string }>) {
 
       {/* Salon description */}
       <div className="my-10">
-        <h2 className="mb-4 text-2xl font-bold">About {salon.title}</h2>
-        <p className="text-gray-700">{salon.descriptions}</p>
+        <h2 className="mb-4 text-2xl font-bold">About {salon.name}</h2>
+        <p className="text-gray-700">{salon.description}</p>
       </div>
 
       {/* Amenities */}
