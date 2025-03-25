@@ -69,6 +69,7 @@ export type Salon = {
 
 export type Service = {
   id: string
+  salon_id?: string | number
   name: string
   description: string
   duration: number
@@ -94,10 +95,27 @@ export type Appointment = {
   salon_id: string
   service_id: string
   customer_id: string
+  stylist_id?: string
   date: string
   time: string
   status: "pending" | "confirmed" | "cancelled" | "completed"
   created_at: string
   updated_at: string
   notes?: string
+  customer_name?: string
+  customer_email?: string
+  customer_phone?: string
+  duration?: number
+}
+
+export type Stylist = {
+  id: string
+  name: string
+  salon_id: string
+  bio?: string
+  image_url?: string
+  specialties?: string[]
+  experience?: number
+  services: Service[]
+  availability?: string[]
 }

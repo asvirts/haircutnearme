@@ -1,5 +1,5 @@
 import { readDb } from "./jsonDb"
-import { Appointment } from "./types"
+import { Appointment, Stylist } from "./types"
 
 // Salon API functions
 export async function getSalons({
@@ -144,4 +144,43 @@ export async function createAppointment(
   // await writeDb(db)
 
   return newAppointment
+}
+
+// Stylist API functions
+export async function getStylists({
+  filters = {},
+  from = 0,
+  to = 20
+}: {
+  filters?: Record<string, any>
+  from?: number
+  to?: number
+} = {}) {
+  const db = await readDb()
+  let filteredStylists = [...(db.stylists || [])]
+
+  // Apply filters if provided
+  if (filters.salon_id) {
+    filteredStylists = filteredStylists.filter(
+      (stylist) => String(stylist.salon_id) === String(filters.salon_id)
+    )
+  }
+
+  if (filters.search) {
+    const searchTerm = filters.search.toLowerCase()
+    filteredStylists = filteredStylists.filter(
+      (stylist) =>
+        stylist.name?.toLowerCase().includes(searchTerm) ||
+        stylist.bio?.toLowerCase().includes(searchTerm)
+    )
+  }
+
+  return filteredStylists.slice(from, to)
+}
+
+export async function getStylistById(id: string) {
+  const db = await readDb()
+  const stylist = db.stylists?.find((s) => String(s.id) === String(id))
+  if (!stylist) throw new Error(`Stylist with id ${id} not found`)
+  return stylist
 }

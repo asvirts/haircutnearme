@@ -34,9 +34,12 @@ export function adaptSalonToAppFormat(dbSalon: DBSalon): AppSalon {
     website: dbSalon.website || "",
     image_url: dbSalon.thumbnail || "",
     description: dbSalon.descriptions || dbSalon.description || "",
-    price_range: typeof dbSalon.price_range === "string" 
-      ? dbSalon.price_range.length 
-      : (typeof dbSalon.price_range === "number" ? dbSalon.price_range : 1),
+    price_range:
+      typeof dbSalon.price_range === "string"
+        ? dbSalon.price_range.length
+        : typeof dbSalon.price_range === "number"
+        ? dbSalon.price_range
+        : 1,
     amenities: dbSalon.about?.highlights || dbSalon.amenities || [],
     latitude: dbSalon.latitude || 0,
     longitude: dbSalon.longitude || 0,
@@ -58,30 +61,30 @@ export function getBusinessHours(salon: DBSalon): Record<string, string> {
         }
         return acc
       }, {} as Record<string, string>)
-    } 
-    
+    }
+
     // Try to extract from open_hours object directly if it has day keys
     if (salon.open_hours) {
       const hours = {} as Record<string, string>
-      
+
       // Filter out non-day properties
       for (const [key, value] of Object.entries(salon.open_hours)) {
-        if (key !== 'today' && key !== 'weekly' && value) {
+        if (key !== "today" && key !== "weekly" && value) {
           // Handle case where value is an array (e.g., ["9 AM–5 PM"])
           if (Array.isArray(value)) {
-            hours[key] = value[0] || 'Closed'
-          } else if (typeof value === 'string') {
+            hours[key] = typeof value[0] === "string" ? value[0] : "Closed"
+          } else if (typeof value === "string") {
             hours[key] = value
           }
         }
       }
-      
+
       if (Object.keys(hours).length > 0) {
         return hours
       }
     }
   }
-  
+
   // Case 2: If salon has open_hours as a string, try to parse it
   if (typeof salon.open_hours === "string") {
     try {
@@ -91,18 +94,18 @@ export function getBusinessHours(salon: DBSalon): Record<string, string> {
       }
     } catch (e) {
       // Not valid JSON, use as is
-      return { "Hours": salon.open_hours }
+      return { Hours: salon.open_hours }
     }
   }
-  
+
   // Default empty hours
   return {
-    "Monday": "9 AM–7 PM",
-    "Tuesday": "9 AM–7 PM",
-    "Wednesday": "9 AM–7 PM",
-    "Thursday": "9 AM–7 PM",
-    "Friday": "9 AM–7 PM",
-    "Saturday": "9 AM–5 PM",
-    "Sunday": "Closed"
+    Monday: "9 AM–7 PM",
+    Tuesday: "9 AM–7 PM",
+    Wednesday: "9 AM–7 PM",
+    Thursday: "9 AM–7 PM",
+    Friday: "9 AM–7 PM",
+    Saturday: "9 AM–5 PM",
+    Sunday: "Closed"
   }
 }

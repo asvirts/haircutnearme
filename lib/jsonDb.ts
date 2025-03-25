@@ -1,4 +1,4 @@
-import { Appointment, Review, Salon, Service } from "./types"
+import { Appointment, Review, Salon, Service, Stylist } from "./types"
 import { MOCK_DB } from "./mockData"
 
 // Database structure
@@ -7,6 +7,7 @@ export interface JsonDB {
   services: Service[]
   reviews: Review[]
   appointments: Appointment[]
+  stylists?: Stylist[]
 }
 
 // Read the database

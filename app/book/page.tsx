@@ -1,19 +1,14 @@
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import { useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import Image from "next/image"
-import { Stylist, Salon } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  createAppointment,
-  getStylistById,
-  getSalonById,
-  getStylists
-} from "@/lib/api"
+import { createAppointment } from "@/lib/api"
 import { Calendar, Clock, ArrowRight, Check } from "lucide-react"
+import { MOCK_DB } from "@/lib/mockData"
+import { Service } from "@/lib/types"
 
 // Available time slots
 const AVAILABLE_TIMES = [
@@ -38,6 +33,18 @@ const AVAILABLE_TIMES = [
   "6:00 PM"
 ]
 
+// Define a map of salons from mock data for client-side access
+const SALONS = MOCK_DB.salons.reduce((acc, salon) => {
+  acc[salon.id] = salon
+  return acc
+}, {} as Record<string | number, (typeof MOCK_DB.salons)[0]>)
+
+// Since we don't need stylists, we'll use the services directly
+const SERVICES = MOCK_DB.services.reduce((acc, service) => {
+  acc[service.id] = service
+  return acc
+}, {} as Record<string, Service>)
+
 type BookingStep = "service" | "datetime" | "details" | "confirmation"
 
 // BookingForm component that uses useSearchParams
@@ -50,6 +57,9 @@ function BookingForm() {
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
     initialServiceId
   )
+  const [selectedSalonId, setSelectedSalonId] = useState<string | null>(
+    initialSalonId
+  )
   const [selectedDate, setSelectedDate] = useState<string>("")
   const [selectedTime, setSelectedTime] = useState<string>("")
   const [bookingDetails, setBookingDetails] = useState({
@@ -60,18 +70,20 @@ function BookingForm() {
     notes: ""
   })
   const [bookingComplete, setBookingComplete] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const salonId = initialSalonId
-  const salon = salonId ? SALONS[salonId] : null
-
-  const selectedService = selectedServiceId
-    ? STYLISTS[selectedServiceId]?.services.find(
-        (s) => s.id === selectedServiceId
-      )
-    : null
+  // Get selected service directly from SERVICES
+  const selectedService = selectedServiceId ? SERVICES[selectedServiceId] : null
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedServiceId(serviceId)
+
+    // Set the salon ID based on the service's salon_id
+    const service = SERVICES[serviceId]
+    if (service && service.salon_id) {
+      setSelectedSalonId(String(service.salon_id))
+    }
+
     setStep("datetime")
   }
 
@@ -94,19 +106,26 @@ function BookingForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (!selectedServiceId || !selectedDate || !selectedTime) {
+    if (
+      !selectedServiceId ||
+      !selectedDate ||
+      !selectedTime ||
+      !selectedSalonId
+    ) {
       alert("Please complete all booking steps")
       return
     }
 
+    setIsLoading(true)
     try {
       // In a real app, this would call the API to create the appointment
       await createAppointment({
-        stylist_id: selectedStylistId,
+        salon_id: selectedSalonId,
         service_id: selectedServiceId,
+        customer_id: "guest",
         date: selectedDate,
         time: selectedTime,
-        duration: selectedService.duration,
+        duration: selectedService?.duration || 60,
         customer_name: `${bookingDetails.firstName} ${bookingDetails.lastName}`,
         customer_email: bookingDetails.email,
         customer_phone: bookingDetails.phone,
@@ -118,6 +137,8 @@ function BookingForm() {
     } catch (error) {
       console.error("Error creating appointment:", error)
       alert("There was a problem booking your appointment. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -186,33 +207,32 @@ function BookingForm() {
         <div>
           <h2 className="mb-4 text-xl font-semibold">Select a Service</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Object.values(stylists).map((stylist) => (
+            {Object.values(SERVICES).map((service) => (
               <div
-                key={stylist.id}
+                key={service.id}
                 className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md ${
-                  selectedServiceId === stylist.id
+                  selectedServiceId === service.id
                     ? "border-blue-500 bg-blue-50"
                     : ""
                 }`}
-                onClick={() => handleServiceSelect(stylist.id)}
+                onClick={() => handleServiceSelect(service.id)}
               >
-                <div className="flex gap-4">
-                  <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full">
-                    <Image
-                      src={
-                        stylist.image_url || "/images/placeholder-stylist.jpg"
-                      }
-                      alt={stylist.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="ml-4">
+                <div className="flex flex-col">
+                  <div className="mb-2">
                     <p className="text-sm font-medium text-gray-900">
-                      {stylist.name}
+                      {service.name}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {salons[stylist.salon_id].title}
+                      {(service.salon_id && SALONS[service.salon_id]?.title) ||
+                        ""}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      {service.description}
+                    </p>
+                    <p className="mt-2 text-sm font-medium">
+                      ${service.price} - {service.duration} min
                     </p>
                   </div>
                 </div>
@@ -247,28 +267,16 @@ function BookingForm() {
 
           <div className="mb-6 rounded-lg border bg-gray-50 p-4">
             <div className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-4">
-                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
-                  <Image
-                    src={
-                      STYLISTS[selectedServiceId]?.image_url ||
-                      "/images/placeholder-stylist.jpg"
-                    }
-                    alt={STYLISTS[selectedServiceId]?.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h3 className="font-medium">
-                    {STYLISTS[selectedServiceId]?.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">{salon?.name}</p>
-                </div>
+              <div>
+                <h3 className="font-medium">{selectedService.name}</h3>
+                <p className="text-sm text-gray-600">
+                  {(selectedService.salon_id &&
+                    SALONS[selectedService.salon_id]?.title) ||
+                    ""}
+                </p>
               </div>
 
               <div className="flex-1 border-l pl-6">
-                <h3 className="font-medium">{selectedService.name}</h3>
                 <div className="flex gap-4 text-sm text-gray-600">
                   <p>${selectedService.price}</p>
                   <p>{selectedService.duration} minutes</p>
@@ -359,30 +367,17 @@ function BookingForm() {
 
             <div className="mb-6 rounded-lg border bg-gray-50 p-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-center gap-4">
-                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
-                    <Image
-                      src={
-                        STYLISTS[selectedServiceId]?.image_url ||
-                        "/images/placeholder-stylist.jpg"
-                      }
-                      alt={STYLISTS[selectedServiceId]?.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">
-                      {STYLISTS[selectedServiceId]?.name}
-                    </h3>
-                    <p className="text-sm text-gray-600">{salon?.name}</p>
-                  </div>
+                <div>
+                  <h3 className="font-medium">{selectedService.name}</h3>
+                  <p className="text-sm text-gray-600">
+                    {(selectedService.salon_id &&
+                      SALONS[selectedService.salon_id]?.title) ||
+                      ""}
+                  </p>
                 </div>
 
                 <div>
-                  <h3 className="font-medium">
-                    {selectedService.name} - ${selectedService.price}
-                  </h3>
+                  <h3 className="font-medium">${selectedService.price}</h3>
                   <p className="text-sm text-gray-600">
                     {new Date(selectedDate).toLocaleDateString("en-US", {
                       weekday: "long",
@@ -474,7 +469,7 @@ function BookingForm() {
         )}
 
       {/* Step 4: Confirmation */}
-      {step === "confirmation" && bookingComplete && (
+      {step === "confirmation" && bookingComplete && selectedService && (
         <div className="text-center">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100">
             <Check className="h-12 w-12 text-green-600" />
@@ -482,17 +477,21 @@ function BookingForm() {
 
           <h2 className="mb-2 text-2xl font-bold">Booking Confirmed!</h2>
           <p className="mb-6 text-lg text-gray-600">
-            We've sent a confirmation email to {bookingDetails.email}
+            We&apos;ve sent a confirmation email to {bookingDetails.email}
           </p>
 
           <div className="mx-auto mb-8 max-w-md rounded-lg border bg-gray-50 p-6">
             <div className="mb-4 text-left">
-              <h3 className="font-medium">
-                {STYLISTS[selectedServiceId]?.name}
-              </h3>
-              <p className="text-gray-600">{salon?.name}</p>
+              <h3 className="font-medium">{selectedService.name}</h3>
               <p className="text-gray-600">
-                {salon?.address}, {salon?.city}
+                {(selectedService.salon_id &&
+                  SALONS[selectedService.salon_id]?.title) ||
+                  ""}
+              </p>
+              <p className="text-gray-600">
+                {(selectedService.salon_id &&
+                  SALONS[selectedService.salon_id]?.address) ||
+                  ""}
               </p>
             </div>
 
@@ -535,9 +534,7 @@ function BookingForm() {
 
           <div className="flex justify-center gap-4">
             <Button variant="outline" asChild>
-              <Link href={`/stylists/${selectedServiceId}`}>
-                View Stylist Profile
-              </Link>
+              <Link href={`/salons/${selectedSalonId}`}>View Salon</Link>
             </Button>
             <Button asChild>
               <Link href="/">Return to Home</Link>

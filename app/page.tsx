@@ -207,7 +207,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchFeaturedSalons() {
       try {
-        const salons = await getSalons({}, 1, 3) // Limit to 3 featured salons
+        const salons = await getSalons({ from: 0, to: 3 }) // Limit to 3 featured salons
         setFeaturedSalons(salons)
       } catch (error) {
         console.error("Error fetching salons:", error)

@@ -1,15 +1,15 @@
 import { MetadataRoute } from "next"
+import { MOCK_DB } from "@/lib/mockData"
 
-// Now we fetch all salon IDs from Supabase
+// Get salon IDs from mock data
 const getSalonIds = async (): Promise<string[]> => {
-  const { data, error } = await supabase.from("salons").select("id")
-
-  if (error) {
+  // Use mock data instead of Supabase
+  try {
+    return MOCK_DB.salons.map((salon) => salon.id.toString())
+  } catch (error) {
     console.error("Error fetching salon IDs for sitemap:", error)
     return []
   }
-
-  return data.map((salon) => salon.id.toString())
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

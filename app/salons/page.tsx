@@ -17,7 +17,10 @@ export default function SalonsPage() {
     async function fetchSalons() {
       setIsLoading(true)
       try {
-        const data = await getSalons({}, page, ITEMS_PER_PAGE)
+        const data = await getSalons({
+          from: (page - 1) * ITEMS_PER_PAGE,
+          to: page * ITEMS_PER_PAGE
+        })
         setSalons(data)
         // In a real implementation, you'd get the total count from the API
         // For now, we're assuming 2 pages of data
@@ -30,7 +33,7 @@ export default function SalonsPage() {
     }
 
     fetchSalons()
-  }, [page])
+  }, [page, ITEMS_PER_PAGE])
 
   const handleFilterChange = (filters: Record<string, unknown>) => {
     console.log("Filters changed:", filters)
