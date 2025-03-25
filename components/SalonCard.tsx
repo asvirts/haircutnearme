@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 import { Salon } from "@/lib/types"
 import {
@@ -32,11 +31,10 @@ export function SalonCard({ salon }: SalonCardProps) {
       itemType="https://schema.org/HairSalon"
     >
       <div className="relative h-48 w-full">
-        <Image
+        <img
           src={salon.thumbnail || "/images/placeholder-salon.jpg"}
           alt={`${salon.title} - hair salon - haircut near me`}
-          fill
-          className="object-cover"
+          className="object-cover w-full h-full"
           loading="lazy"
           itemProp="image"
         />

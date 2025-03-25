@@ -1,16 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { SearchFilters } from "@/components/SearchFilters"
 import { SalonCard } from "@/components/SalonCard"
-import { StylistCard } from "@/components/StylistCard"
 import { Button } from "@/components/ui/button"
-import { MapPin, Calendar, Star, Scissors, Sparkles } from "lucide-react"
+import { MapPin, Calendar, Star } from "lucide-react"
 import { Salon } from "@/lib/types"
 import Head from "next/head"
 
-// Mock data - in a real app, would come from Supabase
+// Mock data - in a real app, would come from the local JSON database
 const FEATURED_SALONS: Salon[] = [
   {
     id: 1,
@@ -228,12 +226,10 @@ export default function Home() {
       {/* Hero section */}
       <section className="relative bg-gradient-to-r from-blue-900 to-purple-900 py-20 text-white">
         <div className="absolute inset-0 opacity-20">
-          <Image
+          <img
             src="/images/hero-bg.jpg"
             alt="Haircut near me - professional salon services"
-            fill
-            className="object-cover"
-            priority
+            className="object-cover w-full h-full"
           />
         </div>
         <div className="container relative mx-auto px-4 text-center">

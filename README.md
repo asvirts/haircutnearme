@@ -17,7 +17,7 @@ HaircutNearMe is a Next.js application that connects users with local hair salon
 ### Initial Setup (March 22, 2024)
 
 - Created Next.js 15 project with TypeScript, React 19, and TailwindCSS 4
-- Set up Supabase integration for backend database and authentication
+- Set up local JSON database for backend data storage
 - Implemented responsive UI components with Tailwind and custom UI components
 - Created core data types for Salons, Stylists, Services, Reviews, and Appointments
 - Built homepage with search functionality, featured salons, and information sections
@@ -55,8 +55,7 @@ haircutnearme/
 │   └── ...
 ├── lib/                # Utilities and services
 │   ├── api.ts          # API integration functions
-│   ├── supabase.ts     # Supabase client configuration
-│   ├── types.ts        # TypeScript type definitions
+│   ├── jsonDb.ts       # JSON database operations
 │   └── utils.ts        # Helper functions
 └── public/             # Static assets
 ```
@@ -65,8 +64,8 @@ haircutnearme/
 
 - **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: TailwindCSS 4, CVA (class-variance-authority)
-- **Database**: Supabase
-- **Authentication**: Supabase Auth
+- **Database**: Local JSON file
+- **Authentication**: None (to be implemented)
 - **Icons**: Lucide React, Heroicons, React Icons
 - **Deployment**: Vercel (planned)
 
@@ -137,16 +136,11 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 🌐 Environment Setup
 
-Create a `.env.local` file with the following variables:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+No environment variables are needed for the local JSON database.
 
 ## 🧪 Mock Data
 
-During development, the application uses mock data for salons and stylists. In production, this will be replaced with data from Supabase.
+During development, the application uses a local JSON file for salon and stylist data.
 
 ## 📱 Responsive Design
 

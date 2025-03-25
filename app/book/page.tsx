@@ -126,23 +126,14 @@ const AVAILABLE_TIMES = [
   "3:30 PM"
 ]
 
-type BookingStep =
-  | "stylist"
-  | "service"
-  | "datetime"
-  | "details"
-  | "confirmation"
+type BookingStep = "service" | "datetime" | "details" | "confirmation"
 
 export default function BookPage() {
   const searchParams = useSearchParams()
-  const initialStylistId = searchParams.get("stylist")
   const initialSalonId = searchParams.get("salon")
   const initialServiceId = searchParams.get("service")
 
-  const [step, setStep] = useState<BookingStep>("stylist")
-  const [selectedStylistId, setSelectedStylistId] = useState<string | null>(
-    initialStylistId
-  )
+  const [step, setStep] = useState<BookingStep>("service")
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(
     initialServiceId
   )
@@ -157,23 +148,18 @@ export default function BookPage() {
   })
   const [bookingComplete, setBookingComplete] = useState(false)
 
-  const selectedStylist = selectedStylistId ? STYLISTS[selectedStylistId] : null
-  const salonId = selectedStylist?.salon_id || initialSalonId
+  const salonId = initialSalonId
   const salon = salonId ? SALONS[salonId] : null
 
-  const selectedService =
-    selectedStylist && selectedServiceId
-      ? selectedStylist.services.find((s) => s.id === selectedServiceId)
-      : null
+  const selectedService = selectedServiceId
+    ? STYLISTS[selectedServiceId]?.services.find(
+        (s) => s.id === selectedServiceId
+      )
+    : null
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedServiceId(serviceId)
     setStep("datetime")
-  }
-
-  const handleStylistSelect = (stylistId: string) => {
-    setSelectedStylistId(stylistId)
-    setStep("service")
   }
 
   const handleDateSelect = (date: string) => {
@@ -195,12 +181,7 @@ export default function BookPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (
-      !selectedStylistId ||
-      !selectedServiceId ||
-      !selectedDate ||
-      !selectedTime
-    ) {
+    if (!selectedServiceId || !selectedDate || !selectedTime) {
       alert("Please complete all booking steps")
       return
     }
@@ -226,21 +207,12 @@ export default function BookPage() {
         <div className="mb-4 flex border-b">
           <div
             className={`pb-2 px-4 ${
-              step === "stylist"
-                ? "border-b-2 border-blue-500 text-blue-600 font-medium"
-                : "text-gray-500"
-            }`}
-          >
-            1. Choose Stylist
-          </div>
-          <div
-            className={`pb-2 px-4 ${
               step === "service"
                 ? "border-b-2 border-blue-500 text-blue-600 font-medium"
                 : "text-gray-500"
             }`}
           >
-            2. Select Service
+            1. Select Service
           </div>
           <div
             className={`pb-2 px-4 ${
@@ -249,7 +221,7 @@ export default function BookPage() {
                 : "text-gray-500"
             }`}
           >
-            3. Date & Time
+            2. Date & Time
           </div>
           <div
             className={`pb-2 px-4 ${
@@ -258,7 +230,7 @@ export default function BookPage() {
                 : "text-gray-500"
             }`}
           >
-            4. Your Details
+            3. Your Details
           </div>
           <div
             className={`pb-2 px-4 ${
@@ -267,25 +239,25 @@ export default function BookPage() {
                 : "text-gray-500"
             }`}
           >
-            5. Confirmation
+            4. Confirmation
           </div>
         </div>
       </div>
 
-      {/* Step 1: Select Stylist */}
-      {step === "stylist" && (
+      {/* Step 1: Select Service */}
+      {step === "service" && (
         <div>
-          <h2 className="mb-4 text-xl font-semibold">Choose a Stylist</h2>
+          <h2 className="mb-4 text-xl font-semibold">Select a Service</h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Object.values(STYLISTS).map((stylist) => (
               <div
                 key={stylist.id}
                 className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md ${
-                  selectedStylistId === stylist.id
+                  selectedServiceId === stylist.id
                     ? "border-blue-500 bg-blue-50"
                     : ""
                 }`}
-                onClick={() => handleStylistSelect(stylist.id)}
+                onClick={() => handleServiceSelect(stylist.id)}
               >
                 <div className="flex gap-4">
                   <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full">
@@ -314,8 +286,8 @@ export default function BookPage() {
 
           <div className="mt-8 flex justify-end">
             <Button
-              onClick={() => selectedStylistId && setStep("service")}
-              disabled={!selectedStylistId}
+              onClick={() => selectedServiceId && setStep("datetime")}
+              disabled={!selectedServiceId}
             >
               Continue <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -323,78 +295,8 @@ export default function BookPage() {
         </div>
       )}
 
-      {/* Step 2: Select Service */}
-      {step === "service" && selectedStylist && (
-        <div>
-          <div className="mb-4 flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setStep("stylist")}
-            >
-              ← Back
-            </Button>
-            <h2 className="text-xl font-semibold">Select a Service</h2>
-          </div>
-
-          <div className="mb-6 rounded-lg border bg-gray-50 p-4">
-            <div className="flex items-center gap-4">
-              <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
-                <Image
-                  src={
-                    selectedStylist.image_url ||
-                    "/images/placeholder-stylist.jpg"
-                  }
-                  alt={selectedStylist.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="font-medium">{selectedStylist.name}</h3>
-                <p className="text-sm text-gray-600">{salon?.name}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="divide-y rounded-lg border">
-            {selectedStylist.services.map((service) => (
-              <div
-                key={service.id}
-                className={`cursor-pointer p-4 transition-all hover:bg-gray-50 ${
-                  selectedServiceId === service.id ? "bg-blue-50" : ""
-                }`}
-                onClick={() => handleServiceSelect(service.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{service.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {service.description}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {service.duration} minutes
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold">${service.price}</p>
-                    <Button
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => handleServiceSelect(service.id)}
-                    >
-                      Select
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Select Date and Time */}
-      {step === "datetime" && selectedStylist && selectedService && (
+      {/* Step 2: Select Date and Time */}
+      {step === "datetime" && selectedService && (
         <div>
           <div className="mb-4 flex items-center gap-4">
             <Button
@@ -413,16 +315,18 @@ export default function BookPage() {
                 <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
                   <Image
                     src={
-                      selectedStylist.image_url ||
+                      STYLISTS[selectedServiceId]?.image_url ||
                       "/images/placeholder-stylist.jpg"
                     }
-                    alt={selectedStylist.name}
+                    alt={STYLISTS[selectedServiceId]?.name}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <div>
-                  <h3 className="font-medium">{selectedStylist.name}</h3>
+                  <h3 className="font-medium">
+                    {STYLISTS[selectedServiceId]?.name}
+                  </h3>
                   <p className="text-sm text-gray-600">{salon?.name}</p>
                 </div>
               </div>
@@ -500,9 +404,8 @@ export default function BookPage() {
         </div>
       )}
 
-      {/* Step 4: Enter Details */}
+      {/* Step 3: Enter Details */}
       {step === "details" &&
-        selectedStylist &&
         selectedService &&
         selectedDate &&
         selectedTime && (
@@ -524,16 +427,18 @@ export default function BookPage() {
                   <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full">
                     <Image
                       src={
-                        selectedStylist.image_url ||
+                        STYLISTS[selectedServiceId]?.image_url ||
                         "/images/placeholder-stylist.jpg"
                       }
-                      alt={selectedStylist.name}
+                      alt={STYLISTS[selectedServiceId]?.name}
                       fill
                       className="object-cover"
                     />
                   </div>
                   <div>
-                    <h3 className="font-medium">{selectedStylist.name}</h3>
+                    <h3 className="font-medium">
+                      {STYLISTS[selectedServiceId]?.name}
+                    </h3>
                     <p className="text-sm text-gray-600">{salon?.name}</p>
                   </div>
                 </div>
@@ -632,7 +537,7 @@ export default function BookPage() {
           </div>
         )}
 
-      {/* Step 5: Confirmation */}
+      {/* Step 4: Confirmation */}
       {step === "confirmation" && bookingComplete && (
         <div className="text-center">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100">
@@ -646,7 +551,9 @@ export default function BookPage() {
 
           <div className="mx-auto mb-8 max-w-md rounded-lg border bg-gray-50 p-6">
             <div className="mb-4 text-left">
-              <h3 className="font-medium">{selectedStylist?.name}</h3>
+              <h3 className="font-medium">
+                {STYLISTS[selectedServiceId]?.name}
+              </h3>
               <p className="text-gray-600">{salon?.name}</p>
               <p className="text-gray-600">
                 {salon?.address}, {salon?.city}
@@ -692,7 +599,7 @@ export default function BookPage() {
 
           <div className="flex justify-center gap-4">
             <Button variant="outline" asChild>
-              <Link href={`/stylists/${selectedStylistId}`}>
+              <Link href={`/stylists/${selectedServiceId}`}>
                 View Stylist Profile
               </Link>
             </Button>

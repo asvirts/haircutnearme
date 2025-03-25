@@ -1,86 +1,97 @@
+import { StaticImageData } from "next/image"
+
 export type Salon = {
-  id: number
-  input_id: string
-  link: string
-  title: string // salon name
-  category: string
+  id: string | number
+  input_id?: string
+  link?: string
+  title: string
+  category?: string
   address: string
-  open_hours: Record<string, any>
-  popular_times: Record<string, any>
+  open_hours?:
+    | {
+        today?: string
+        weekly?: Array<{ day: string; hours: string }>
+      }
+    | string
+  popular_times?: Record<string, unknown>
   website?: string
-  phone: string
-  plus_code: string
-  review_count: number
-  review_rating: number
-  reviews_per_rating: Record<string, any>
+  phone?: string
+  plus_code?: string
+  review_count?: number
+  review_rating?: number
+  reviews_per_rating?: Record<string, number>
   latitude?: number
   longitude?: number
-  cid: number
-  status: string
-  descriptions: string
-  reviews_link: string
-  thumbnail: string
-  timezone: string
-  price_range: string
-  data_id: string
-  images: string[]
-  reservations: string
-  order_online: string
-  menu: Record<string, any>
-  owner: Record<string, any>
-  complete_address: Record<string, any>
-  about: Record<string, any>
-  user_reviews: Record<string, any>
-  emails: string
-}
-
-export type Stylist = {
-  id: string
-  salon_id: string
-  name: string
-  bio: string
-  specialties: string[]
-  services: Service[]
-  created_at: string
-  updated_at: string
+  cid?: number
+  status?: string
+  descriptions?: string
+  description?: string
+  reviews_link?: string
+  thumbnail?: string
+  timezone?: string
+  price_range?: number | string
+  data_id?: string
+  images?: Array<string | { image: string }>
+  reservations?: string
+  order_online?: string
+  menu?: Record<string, unknown>
+  owner?: { name: string; response_rate: string }
+  complete_address?: {
+    street?: string
+    city?: string
+    state?: string
+    zip?: string
+    country?: string
+  }
+  city?: string
+  state?: string
+  zip?: string
+  about?: {
+    highlights?: string[]
+    services?: string[]
+  }
+  amenities?: string[]
+  is_wheelchair_accessible?: boolean
+  has_parking?: boolean
+  user_reviews?: Array<Review>
+  emails?: string
   image_url?: string
-  years_experience: number
+  created_at?: string
+  updated_at?: string
+  name?: string
 }
 
 export type Service = {
   id: string
   name: string
   description: string
-  duration: number // in minutes
+  duration: number
   price: number
-  stylist_id: string
+  category?: string
 }
 
 export type Review = {
   id: string
-  stylist_id: string
-  rating: 1 | 2 | 3 | 4 | 5
+  salon_id?: string
+  rating: number
   comment: string
   customer_name: string
   created_at: string
-  skill_rating?: 1 | 2 | 3 | 4 | 5
-  timeliness_rating?: 1 | 2 | 3 | 4 | 5
-  value_rating?: 1 | 2 | 3 | 4 | 5
+  skill_rating?: number
+  timeliness_rating?: number
+  value_rating?: number
   image_url?: string
 }
 
 export type Appointment = {
   id: string
-  stylist_id: string
+  salon_id: string
   service_id: string
+  customer_id: string
   date: string
   time: string
-  duration: number
-  customer_name: string
-  customer_email: string
-  customer_phone: string
-  status: "pending" | "confirmed" | "cancelled"
-  notes?: string
+  status: "pending" | "confirmed" | "cancelled" | "completed"
   created_at: string
   updated_at: string
+  notes?: string
 }

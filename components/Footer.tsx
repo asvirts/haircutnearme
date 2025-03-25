@@ -34,14 +34,6 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/stylists"
-                  className="text-gray-600 hover:text-blue-500"
-                >
-                  Find Stylists
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/book"
                   className="text-gray-600 hover:text-blue-500"
                 >

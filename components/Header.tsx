@@ -20,21 +20,12 @@ export function Header() {
             Find Salons
           </Link>
           <Link
-            href="/stylists"
-            className="text-sm font-medium hover:text-blue-500"
-          >
-            Find Stylists
-          </Link>
-          <Link
             href="/book"
             className="text-sm font-medium hover:text-blue-500"
           >
             Book
           </Link>
-          <Link
-            href="/faq"
-            className="text-sm font-medium hover:text-blue-500"
-          >
+          <Link href="/faq" className="text-sm font-medium hover:text-blue-500">
             FAQ
           </Link>
           <Link

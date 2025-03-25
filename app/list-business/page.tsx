@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 import {
   Check,
@@ -81,11 +80,10 @@ export default function ListBusinessPage() {
         </div>
 
         <div className="order-1 relative aspect-square overflow-hidden rounded-lg md:order-2">
-          <Image
+          <img
             src="/images/salon-owner.jpg"
             alt="Salon owner working with client"
-            fill
-            className="object-cover"
+            className="object-cover w-full h-full"
           />
         </div>
       </div>
